@@ -5,10 +5,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-# find dependencies
-# find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
+set(CMAKE_BUILD_TYPE Debug)
+
 find_package(Eigen3 REQUIRED)
 
 add_library(pose_covariance_geometry SHARED 
@@ -18,17 +16,12 @@ add_library(pose_covariance_geometry SHARED
   src/pose_covariance_representation.cpp
   src/covariance_representation.cpp
   )
-target_include_directories(pose_covariance_geometry PRIVATE include)
-# add_dependencies(pose_covariance_geometry Eigen3)
-# ament_target_dependencies(
-#   pose_covariance_geometry
-#   SYSTEM
-#   Eigen3
-# )
+
+target_include_directories(pose_covariance_geometry PUBLIC include)
 
 ## tests
 add_executable(test_node test/test.cpp)
-target_include_directories(test_node PRIVATE include)
+target_include_directories(test_node PUBLIC include)
 target_link_libraries(test_node pose_covariance_geometry)
 
 # if(BUILD_TESTING)
@@ -47,6 +40,3 @@ install(TARGETS pose_covariance_geometry EXPORT ${PROJECT_NAME}-export
   LIBRARY       DESTINATION lib
   PUBLIC_HEADER DESTINATION lib
 )
-# ament_export_targets(${PROJECT_NAME}-export HAS_LIBRARY_TARGET)
-
-# ament_package()
