@@ -1,5 +1,7 @@
 #include "covariance_geometry/pose_covariance_representation.hpp"
 
+#include <iostream>
+
 namespace covariance_geometry{
 
   void Pose3DQuaternionCovarianceTo3DRPYCovariance(const PoseQuaternionCovariance& pose_quaternion_covariance, PoseRPYCovariance& pose_rpy_covariance){
@@ -24,6 +26,8 @@ namespace covariance_geometry{
   }
 
   void Pose3DQuaternionCovarianceTo3DQuaternionCovarianceRPY(const PoseQuaternionCovariance& pose_quaternion_covariance, PoseQuaternionCovarianceRPY& pose_quaternion_covariance_rpy){
+    // Copy pose
+    pose_quaternion_covariance_rpy.first = pose_quaternion_covariance.first;
     // Convert covariance
     covariance3DQuaternionTo3DRPY(pose_quaternion_covariance.first.second, pose_quaternion_covariance.second, pose_quaternion_covariance_rpy.second);
   }
@@ -34,7 +38,11 @@ namespace covariance_geometry{
   }
 
   void Pose3DQuaternionCovarianceRPYTo3DQuaternionCovariance(const PoseQuaternionCovarianceRPY& pose_quaternion_covariance_rpy, PoseQuaternionCovariance& pose_quaternion_covariance){
-    // Convert pose from quat to RPY
+    // TODO: check this method
+    // Copy pose
+    pose_quaternion_covariance.first = pose_quaternion_covariance_rpy.first;
+    
+    // Convert pose rotation from quat to RPY
     Eigen::Vector3d pose_rpy;
     QuaternionToRPY(pose_quaternion_covariance_rpy.first.second, pose_rpy);
     // Convert covariance

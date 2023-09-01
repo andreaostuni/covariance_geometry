@@ -138,19 +138,21 @@ namespace covariance_geometry{
       return;
     }
 	  else
-	  { // Non-degenerate case:  
+	  { // Non-degenerate case:
 	    // row 1:
-	    jacobian(0, 0) = -(2*qy)/((std::pow((2*qw*qz + 2*qx*qy), 2) / std::pow((2*qy*qy + 2*qz*qz - 1),2) + 1)*(2*qy*qy + 2*qz*qz - 1));
-	    jacobian(0, 1) = -((2*qx)/(2*qy*qy + 2*qz*qz - 1) - (4*qy*(2*qw*qz + 2*qx*qy))/std::pow((2*qy*qy + 2*qz*qz - 1),2))/(std::pow((2*qw*qz + 2*qx*qy),2)/std::pow((2*qy*qy + 2*qz*qz - 1),2) + 1);
-	    jacobian(0, 2) = -((2*qw)/(2*qy*qy + 2*qz*qz - 1) - (4*qz*(2*qw*qz + 2*qx*qy))/std::pow((2*qy*qy + 2*qz*qz - 1),2))/(std::pow((2*qw*qz + 2*qx*qy),2)/std::pow((2*qy*qy + 2*qz*qz - 1),2) + 1);
-	    jacobian(0, 3) = -(2*qz)/((std::pow((2*qw*qz + 2*qx*qy),2)/std::pow((2*qy*qy + 2*qz*qz - 1),2) + 1)*(2*qy*qy + 2*qz*qz - 1));
-	    // row 2:
-	    jacobian(1, 0) = -(2*qz) / std::sqrt(1 - std::pow((2*qw*qy - 2*qx*qz),2));
+	    jacobian(0, 0) = -(2*qy)  / ((std::pow((2*qw*qz + 2*qx*qy), 2) / std::pow((2*qy*qy + 2*qz*qz - 1),2) + 1)*(2*qy*qy + 2*qz*qz - 1));
+	    jacobian(0, 1) = -((2*qx) / (2*qy*qy + 2*qz*qz - 1) - (4*qy* (2*qw*qz + 2*qx*qy)) / std::pow((2*qy*qy + 2*qz*qz - 1),2)) / (std::pow((2*qw*qz + 2*qx*qy),2) / std::pow((2*qy*qy + 2*qz*qz - 1),2) + 1);
+	    jacobian(0, 2) = -((2*qw) / (2*qy*qy + 2*qz*qz - 1) - (4*qz* (2*qw*qz + 2*qx*qy)) / std::pow((2*qy*qy + 2*qz*qz - 1),2)) / (std::pow((2*qw*qz + 2*qx*qy),2) / std::pow((2*qy*qy + 2*qz*qz - 1),2) + 1);
+	    jacobian(0, 3) = -(2*qz)  / ((std::pow((2*qw*qz + 2*qx*qy),2) / std::pow((2*qy*qy + 2*qz*qz - 1),2) + 1)*(2*qy*qy + 2*qz*qz - 1));
+	    
+      // row 2:
+      	    jacobian(1, 0) = -(2*qz) / std::sqrt(1 - std::pow((2*qw*qy - 2*qx*qz),2));
 	    jacobian(1, 1) =  (2*qw) / std::sqrt(1 - std::pow((2*qw*qy - 2*qx*qz),2));
 	    jacobian(1, 2) = -(2*qx) / std::sqrt(1 - std::pow((2*qw*qy - 2*qx*qz),2));
 	    jacobian(1, 3) =  (2*qy) / std::sqrt(1 - std::pow((2*qw*qy - 2*qx*qz),2));
-	    // row 3:
-	    jacobian(2, 0) = -((2*qw)/(2*qx*qx + 2*qy*qy - 1) - (4*qx*(2*qw*qx + 2*qy*qz))/std::pow((2*qx*qx + 2*qy*qy - 1),2))/(std::pow((2*qw*qx + 2*qy*qz),2)/std::pow((2*qx*qx + 2*qy*qy - 1),2) + 1);
+	    
+      // row 3:
+      jacobian(2, 0) = -((2*qw)/(2*qx*qx + 2*qy*qy - 1) - (4*qx*(2*qw*qx + 2*qy*qz))/std::pow((2*qx*qx + 2*qy*qy - 1),2))/(std::pow((2*qw*qx + 2*qy*qz),2)/std::pow((2*qx*qx + 2*qy*qy - 1),2) + 1);
 	    jacobian(2, 1) = -((2*qz)/(2*qx*qx + 2*qy*qy - 1) - (4*qy*(2*qw*qx + 2*qy*qz))/std::pow((2*qx*qx + 2*qy*qy - 1),2))/(std::pow((2*qw*qx + 2*qy*qz),2)/std::pow((2*qx*qx + 2*qy*qy - 1),2) + 1);
 	    jacobian(2, 2) = -(2*qy)/((std::pow((2*qw*qx + 2*qy*qz),2)/std::pow((2*qx*qx + 2*qy*qy - 1),2) + 1)*(2*qx*qx + 2*qy*qy - 1));
 	    jacobian(2, 3) = -(2*qx)/((std::pow((2*qw*qx + 2*qy*qz),2)/std::pow((2*qx*qx + 2*qy*qy - 1),2) + 1)*(2*qx*qx + 2*qy*qy - 1));

@@ -1,8 +1,8 @@
-#include "covariance_geometry/covariance_representation.hpp"
-#include "covariance_geometry/pose_covariance_representation.hpp"
-
-#include "covariance_geometry/pose_composition.hpp"
 #include "covariance_geometry/pose_covariance_composition.hpp"
+#include "covariance_geometry/pose_covariance_representation.hpp"
+#include "covariance_geometry/pose_composition.hpp"
+
+#include <iostream>
 
 
 namespace covariance_geometry{
@@ -54,7 +54,6 @@ namespace covariance_geometry{
         //
         
         PoseQuaternionCovariance a_q, b_q, out_q;
-        
         // Poses conversion
         Pose3DQuaternionCovarianceRPYTo3DQuaternionCovariance(a, a_q);
         Pose3DQuaternionCovarianceRPYTo3DQuaternionCovariance(b, b_q);
@@ -83,8 +82,8 @@ namespace covariance_geometry{
         Eigen::Matrix7d jacobian_b = Eigen::Matrix7d::Zero();
 
         // derivative of the quaternion normalization
-        Eigen::Matrix7d jacobian_qn_a; //= Eigen::Matrix7d::Zero();
-        Eigen::Matrix7d jacobian_qn_b; //= Eigen::Matrix7d::Zero();
+        Eigen::Matrix7d jacobian_qn_a = Eigen::Matrix7d::Zero();
+        Eigen::Matrix7d jacobian_qn_b = Eigen::Matrix7d::Zero();
         
         // derivative of the poses composition
         Eigen::Matrix7d d_fqc_da = Eigen::Matrix7d::Zero();
@@ -116,6 +115,9 @@ namespace covariance_geometry{
         jacobian_b = jacobian_qn_b * d_fqc_db;        
 
         cov_out = jacobian_a * cov_a * jacobian_a.transpose() + jacobian_b * cov_b * jacobian_b.transpose();
+        
+        out.first = pose_out;
+        out.second = cov_out;
     }
 
     void JacobianPosePoseCompositionA(const PoseQuaternion &pose_a, const PoseQuaternion &pose_b, Eigen::Matrix7d &jacobian)
