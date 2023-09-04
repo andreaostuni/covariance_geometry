@@ -41,6 +41,8 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 
   find_package(ament_cmake_gtest REQUIRED)
+  find_package(mrpt-poses REQUIRED)
+
   ament_add_gtest(${PROJECT_NAME}_test test/test.cpp)
   target_include_directories(${PROJECT_NAME}_test PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -48,8 +50,9 @@ if(BUILD_TESTING)
   )
   ament_target_dependencies(${PROJECT_NAME}_test
     Eigen3
+    mrpt-poses
   )
-  target_link_libraries(${PROJECT_NAME}_test pose_covariance_geometry)
+  target_link_libraries(${PROJECT_NAME}_test pose_covariance_geometry mrpt::poses)
 endif()
 
 install(TARGETS pose_covariance_geometry
