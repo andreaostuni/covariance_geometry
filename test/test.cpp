@@ -1,3 +1,17 @@
+// Copyright 2023 Andrea Ostuni, Giacomo Franchini - PIC4SeR
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include <mrpt/poses/CPose3D.h>
 #include <mrpt/poses/CPose3DPDFGaussian.h>
 #include <mrpt/poses/CPose3DQuat.h>
@@ -14,15 +28,18 @@
 using namespace covariance_geometry;
 #define GTEST_COUT std::cerr << "[          ] [ INFO ]"
 
-template<typename T>
-bool isApprox(const T & a, const T & b, double epsilon = 1e-6)
+template <typename T>
+bool isApprox(const T& a, const T& b, double epsilon = 1e-6)
 {
-  if constexpr (std::is_same_v<T, PoseQuaternion>) {
+  if constexpr (std::is_same_v<T, PoseQuaternion>)
+  {
     GTEST_COUT << "a.first: " << a.first.transpose() << "\t";
     std::cout << "a.second: " << a.second << std::endl;
     GTEST_COUT << "b.first: " << b.first.transpose() << "\t";
     std::cout << "b.second: " << b.second << std::endl;
-  } else {
+  }
+  else
+  {
     GTEST_COUT << "a.first: " << a.first.transpose() << "\t";
     std::cout << "a.second: " << a.second.transpose() << std::endl;
     GTEST_COUT << "b.first: " << b.first.transpose() << "\t";
@@ -31,10 +48,11 @@ bool isApprox(const T & a, const T & b, double epsilon = 1e-6)
   return a.first.isApprox(b.first, epsilon) && a.second.isApprox(b.second, epsilon);
 }
 
-template<typename T>
-bool MRPTtoEigen(const mrpt::poses::CPose3D & mrpt_pose, T & eigen_pose)
+template <typename T>
+bool MRPTtoEigen(const mrpt::poses::CPose3D& mrpt_pose, T& eigen_pose)
 {
-  if constexpr (std::is_same_v<T, PoseRPY>) {
+  if constexpr (std::is_same_v<T, PoseRPY>)
+  {
     // eigen_pose.first = mrpt_pose.m_coords.asEigen();
     // mrpt_pose.getYawPitchRoll(eigen_pose.second(2), eigen_pose.second(1), eigen_pose.second(0));
     eigen_pose.first.x() = mrpt_pose.x();
@@ -44,7 +62,9 @@ bool MRPTtoEigen(const mrpt::poses::CPose3D & mrpt_pose, T & eigen_pose)
     eigen_pose.second.y() = mrpt_pose.pitch();
     eigen_pose.second.z() = mrpt_pose.yaw();
     return true;
-  } else if constexpr (std::is_same_v<T, PoseQuaternion>) {
+  }
+  else if constexpr (std::is_same_v<T, PoseQuaternion>)
+  {
     eigen_pose.first = mrpt_pose.m_coords.asEigen();
     mrpt::math::CQuaternionDouble q;
     mrpt_pose.getAsQuaternion(q);
@@ -55,19 +75,21 @@ bool MRPTtoEigen(const mrpt::poses::CPose3D & mrpt_pose, T & eigen_pose)
   return false;
 }
 
-template<typename T>
-bool EigenToMRPT(const T & eigen_pose, mrpt::poses::CPose3D & mrpt_pose)
+template <typename T>
+bool EigenToMRPT(const T& eigen_pose, mrpt::poses::CPose3D& mrpt_pose)
 {
-  if constexpr (std::is_same_v<T, PoseRPY>) {
-    mrpt_pose = mrpt_pose.FromXYZYawPitchRoll(
-      eigen_pose.first(0), eigen_pose.first(1), eigen_pose.first(2), eigen_pose.second(2),
-      eigen_pose.second(1), eigen_pose.second(0));
+  if constexpr (std::is_same_v<T, PoseRPY>)
+  {
+    mrpt_pose = mrpt_pose.FromXYZYawPitchRoll(eigen_pose.first(0), eigen_pose.first(1), eigen_pose.first(2),
+                                              eigen_pose.second(2), eigen_pose.second(1), eigen_pose.second(0));
     return true;
-  } else if constexpr (std::is_same_v<T, PoseQuaternion>) {
-    mrpt::math::CQuaternionDouble q{
-      eigen_pose.second.w(), eigen_pose.second.x(), eigen_pose.second.y(), eigen_pose.second.z()};
-    mrpt_pose = mrpt_pose.FromQuaternionAndTranslation(
-      q, eigen_pose.first.x(), eigen_pose.first.y(), eigen_pose.first.z());
+  }
+  else if constexpr (std::is_same_v<T, PoseQuaternion>)
+  {
+    mrpt::math::CQuaternionDouble q{ eigen_pose.second.w(), eigen_pose.second.x(), eigen_pose.second.y(),
+                                     eigen_pose.second.z() };
+    mrpt_pose =
+        mrpt_pose.FromQuaternionAndTranslation(q, eigen_pose.first.x(), eigen_pose.first.y(), eigen_pose.first.z());
     return true;
   }
 
@@ -79,15 +101,15 @@ TEST(EigenMRPT, EigenToMRPTRPY)
 {
   PoseRPY pr1, pr_out;
   mrpt::poses::CPose3D mrpt_pose;
-  pr1.first = {1, 0, 0};
-  pr1.second = {0.9128709, 0.4082483, 0};
+  pr1.first = { 1, 0, 0 };
+  pr1.second = { 0.9128709, 0.4082483, 0 };
   EigenToMRPT(pr1, mrpt_pose);
   MRPTtoEigen(mrpt_pose, pr_out);
   GTEST_COUT << "mrpt: " << mrpt_pose.asString() << std::endl;
   EXPECT_TRUE(isApprox<PoseRPY>(pr1, pr_out));
 
-  pr1.first = {1, 0, 0};
-  pr1.second = {0.9067432, 0.4055079, 0.1055943};
+  pr1.first = { 1, 0, 0 };
+  pr1.second = { 0.9067432, 0.4055079, 0.1055943 };
   EigenToMRPT(pr1, mrpt_pose);
   MRPTtoEigen(mrpt_pose, pr_out);
   GTEST_COUT << "mrpt: " << mrpt_pose.asString() << std::endl;
@@ -98,15 +120,15 @@ TEST(EigenMRPT, MRPTtoEigenQuat)
 {
   PoseQuaternion pq1, pq_out;
   mrpt::poses::CPose3D mrpt_pose;
-  pq1.first = {1, 0, 0};
-  pq1.second = {0.9128709, 0.4082483, 0, 0};
+  pq1.first = { 1, 0, 0 };
+  pq1.second = { 0.9128709, 0.4082483, 0, 0 };
   EigenToMRPT(pq1, mrpt_pose);
   MRPTtoEigen(mrpt_pose, pq_out);
   GTEST_COUT << "mrpt: " << mrpt_pose.asString() << std::endl;
   EXPECT_TRUE(isApprox<PoseQuaternion>(pq1, pq_out));
 
-  pq1.first = {1, 0, 0};
-  pq1.second = {0.9067432, 0.4055079, 0.1055943, 0.0472232};
+  pq1.first = { 1, 0, 0 };
+  pq1.second = { 0.9067432, 0.4055079, 0.1055943, 0.0472232 };
   EigenToMRPT(pq1, mrpt_pose);
   MRPTtoEigen(mrpt_pose, pq_out);
   GTEST_COUT << "mrpt: " << mrpt_pose.asString() << std::endl;
@@ -116,10 +138,10 @@ TEST(EigenMRPT, MRPTtoEigenQuat)
 TEST(PoseComposition, HandleZeroPoseQuaternion)
 {
   PoseQuaternion pq1, identity, p_out;
-  pq1.first = {1, 0, 0};
-  pq1.second = {0.9128709, 0.4082483, 0, 0};
-  identity.first = {0, 0, 0};
-  identity.second = {1, 0, 0, 0};  // W X Y Z
+  pq1.first = { 1, 0, 0 };
+  pq1.second = { 0.9128709, 0.4082483, 0, 0 };
+  identity.first = { 0, 0, 0 };
+  identity.second = { 1, 0, 0, 0 };  // W X Y Z
   ComposePose3DQuaternion(pq1, identity, p_out);
   EXPECT_TRUE(isApprox<PoseQuaternion>(pq1, p_out));
 }
@@ -127,10 +149,10 @@ TEST(PoseComposition, HandleZeroPoseQuaternion)
 TEST(PoseComposition, HandleZeroPoseRPY)
 {
   PoseRPY pr1, identity, p_out;
-  pr1.first = {1.0, 0.0, 0.0};
-  pr1.second = {0.9128709, 0.4082483, 0};
-  identity.first = {0.0, 0.0, 0.0};
-  identity.second = {0.0, 0.0, 0.0};
+  pr1.first = { 1.0, 0.0, 0.0 };
+  pr1.second = { 0.9128709, 0.4082483, 0 };
+  identity.first = { 0.0, 0.0, 0.0 };
+  identity.second = { 0.0, 0.0, 0.0 };
   ComposePose3DRPY(pr1, identity, p_out);
   EXPECT_TRUE(isApprox<PoseRPY>(pr1, p_out));
 }
@@ -138,10 +160,10 @@ TEST(PoseComposition, HandleZeroPoseRPY)
 TEST(PoseComposition, HandleCompositionPoseQuaternion)
 {
   PoseQuaternion pq1, pq2, pq3, p_out;
-  pq1.first = {1, 0, 0};
-  pq1.second = {0.9128709, 0.4082483, 0.0, 0.0};
-  pq2.first = {2, 0, 0};
-  pq2.second = {0.9067432, 0.4055079, 0.1055943, 0.0472232};
+  pq1.first = { 1, 0, 0 };
+  pq1.second = { 0.9128709, 0.4082483, 0.0, 0.0 };
+  pq2.first = { 2, 0, 0 };
+  pq2.second = { 0.9067432, 0.4055079, 0.1055943, 0.0472232 };
   ComposePose3DQuaternion(pq1, pq2, p_out);
 
   mrpt::poses::CPose3D p1, p2;
@@ -156,13 +178,13 @@ TEST(PoseComposition, HandleCompositionPoseQuaternion)
 TEST(PoseComposition, HandleCompositionPoseRPY)
 {
   PoseRPY pr1, pr2, pr3, p_out;
-  pr1.first = {1, 0, 0};
+  pr1.first = { 1, 0, 0 };
   // pr1.second = {0.9128709, 0.4082483, 0};
-  pr1.second = {1.5709, 0.0, 0.0};
+  pr1.second = { 1.5709, 0.0, 0.0 };
 
-  pr2.first = {2, 0, 0};
+  pr2.first = { 2, 0, 0 };
   // pr2.second = {0.9128709, 0.4082483, 0};
-  pr2.second = {0.0, 1.5709, 0.0};
+  pr2.second = { 0.0, 1.5709, 0.0 };
 
   ComposePose3DRPY(pr1, pr2, p_out);
 
@@ -199,10 +221,10 @@ TEST(PoseConversion, HandleZeroPoseQuaternion)
 {
   PoseQuaternion pq1;
   PoseRPY pr1, p_out;
-  pq1.first = {0, 0, 0};
-  pq1.second = {1, 0, 0, 0};
-  pr1.first = {0, 0, 0};
-  pr1.second = {0, 0, 0};
+  pq1.first = { 0, 0, 0 };
+  pq1.second = { 1, 0, 0, 0 };
+  pr1.first = { 0, 0, 0 };
+  pr1.second = { 0, 0, 0 };
   Pose3DQuaternionTo3DRPY(pq1, p_out);
   EXPECT_TRUE(isApprox<PoseRPY>(pr1, p_out));
 }
@@ -211,10 +233,10 @@ TEST(PoseConversion, HandleZeroPoseRPY)
 {
   PoseQuaternion pq1, p_out;
   PoseRPY pr1;
-  pq1.first = {0, 0, 0};
-  pq1.second = {1, 0, 0, 0};
-  pr1.first = {0, 0, 0};
-  pr1.second = {0, 0, 0};
+  pq1.first = { 0, 0, 0 };
+  pq1.second = { 1, 0, 0, 0 };
+  pr1.first = { 0, 0, 0 };
+  pr1.second = { 0, 0, 0 };
   Pose3DRPYTo3DQuaternion(pr1, p_out);
   EXPECT_TRUE(isApprox<PoseQuaternion>(pq1, p_out));
 }
@@ -223,17 +245,17 @@ TEST(PoseConversion, HandleConversionPoseQuaternion)
 {
   PoseQuaternion pq1;
   PoseRPY pr1, pr_out;
-  pq1.first = {1, 0, 0};
-  pq1.second = {0.9128709, 0.4082483, 0, 0};
-  pr1.first = {1, 0, 0};
-  pr1.second = {0.8410687, 0.0, 0};
+  pq1.first = { 1, 0, 0 };
+  pq1.second = { 0.9128709, 0.4082483, 0, 0 };
+  pr1.first = { 1, 0, 0 };
+  pr1.second = { 0.8410687, 0.0, 0 };
   Pose3DQuaternionTo3DRPY(pq1, pr_out);
   EXPECT_TRUE(isApprox<PoseRPY>(pr1, pr_out));
 
-  pq1.first = {1, 0, 0};
-  pq1.second = {0.9067432, 0.4055079, 0.1055943, 0.0472232};
-  pr1.first = {1, 0, 0};
-  pr1.second = {0.8545253, 0.1538007, 0.1742029};
+  pq1.first = { 1, 0, 0 };
+  pq1.second = { 0.9067432, 0.4055079, 0.1055943, 0.0472232 };
+  pr1.first = { 1, 0, 0 };
+  pr1.second = { 0.8545253, 0.1538007, 0.1742029 };
   Pose3DQuaternionTo3DRPY(pq1, pr_out);
   EXPECT_TRUE(isApprox<PoseRPY>(pr1, pr_out));
 }
@@ -242,17 +264,17 @@ TEST(PoseConversion, HandleConversionPoseRPY)
 {
   PoseQuaternion pq1, pq_out;
   PoseRPY pr1;
-  pq1.first = {1, 0, 0};
-  pq1.second = {0.9128709, 0.4082483, 0, 0};
-  pr1.first = {1, 0, 0};
-  pr1.second = {0.8410687, 0.0, 0.0};
+  pq1.first = { 1, 0, 0 };
+  pq1.second = { 0.9128709, 0.4082483, 0, 0 };
+  pr1.first = { 1, 0, 0 };
+  pr1.second = { 0.8410687, 0.0, 0.0 };
   Pose3DRPYTo3DQuaternion(pr1, pq_out);
   EXPECT_TRUE(isApprox<PoseQuaternion>(pq1, pq_out));
 
-  pq1.first = {1, 0, 0};
-  pq1.second = {0.9067432, 0.4055079, 0.1055943, 0.0472232};
-  pr1.first = {1, 0, 0};
-  pr1.second = {0.8545253, 0.1538007, 0.1742029};
+  pq1.first = { 1, 0, 0 };
+  pq1.second = { 0.9067432, 0.4055079, 0.1055943, 0.0472232 };
+  pr1.first = { 1, 0, 0 };
+  pr1.second = { 0.8545253, 0.1538007, 0.1742029 };
   Pose3DRPYTo3DQuaternion(pr1, pq_out);
   EXPECT_TRUE(isApprox<PoseQuaternion>(pq1, pq_out));
 }
@@ -261,17 +283,17 @@ TEST(PoseConversion, HandleConversionPoseRPY_90Pitch)
 {
   PoseQuaternion pq1, pq_out;
   PoseRPY pr1;
-  pq1.first = {1, 0, 0};
-  pq1.second = {0.7071068, 0.0, 0.7071068, 0.0};
-  pr1.first = {1, 0, 0};
-  pr1.second = {0.0, M_PI_2, 0.0};
+  pq1.first = { 1, 0, 0 };
+  pq1.second = { 0.7071068, 0.0, 0.7071068, 0.0 };
+  pr1.first = { 1, 0, 0 };
+  pr1.second = { 0.0, M_PI_2, 0.0 };
   Pose3DRPYTo3DQuaternion(pr1, pq_out);
   EXPECT_TRUE(isApprox<PoseQuaternion>(pq1, pq_out));
 
-  pq1.first = {1, 0, 0};
-  pq1.second = {0.7071068, 0.0, -0.7071068, 0.0};
-  pr1.first = {1, 0, 0};
-  pr1.second = {0.0, -M_PI_2, 0.0};
+  pq1.first = { 1, 0, 0 };
+  pq1.second = { 0.7071068, 0.0, -0.7071068, 0.0 };
+  pr1.first = { 1, 0, 0 };
+  pr1.second = { 0.0, -M_PI_2, 0.0 };
   Pose3DRPYTo3DQuaternion(pr1, pq_out);
   EXPECT_TRUE(isApprox<PoseQuaternion>(pq1, pq_out));
 }
@@ -280,8 +302,8 @@ TEST(PoseConversion, CyclicPoseConversionQuaternion)
 {
   PoseQuaternion pq1, pq2;
   PoseRPY pr1;
-  pq1.first = {1, 0, 0};
-  pq1.second = {0.9128709, 0.4082483, 0, 0};
+  pq1.first = { 1, 0, 0 };
+  pq1.second = { 0.9128709, 0.4082483, 0, 0 };
   Pose3DQuaternionTo3DRPY(pq1, pr1);
   Pose3DRPYTo3DQuaternion(pr1, pq2);
   EXPECT_TRUE(isApprox<PoseQuaternion>(pq1, pq2));
@@ -291,8 +313,8 @@ TEST(PoseConversion, CyclicPoseConversionRPY)
 {
   PoseQuaternion pq1;
   PoseRPY pr1, pr2;
-  pq1.first = {1, 0, 0};
-  pq1.second = {0.9128709, 0.4082483, 0, 0};
+  pq1.first = { 1, 0, 0 };
+  pq1.second = { 0.9128709, 0.4082483, 0, 0 };
   Pose3DRPYTo3DQuaternion(pr1, pq1);
   Pose3DQuaternionTo3DRPY(pq1, pr2);
   EXPECT_TRUE(isApprox<PoseRPY>(pr1, pr2));
@@ -309,10 +331,10 @@ void test_pose_composition_conversion()
   //! order is w x y z
   //! if initialized as Eigen::Quaterniond = Eigen::Vector4d q1(0.9128709,
   //! 0.4082483, 0, 0);, the order is x y z w
-  pq1.first = {1, 0, 0};
+  pq1.first = { 1, 0, 0 };
   pq1.second = q1;
 
-  pq2.first = {2, 0, 0};
+  pq2.first = { 2, 0, 0 };
   pq2.second = q1;
   ComposePose3DQuaternion(pq1, pq2, pq3);
 
@@ -387,7 +409,7 @@ void test_pose_with_covariance_composition_conversion()
             << "q: \n"
             << p1.first.second
             << "\n"
-    "cov1: \n"
+               "cov1: \n"
             << p1.second << std::endl;
 
   std::cout << "Pose2 t: "
@@ -396,7 +418,7 @@ void test_pose_with_covariance_composition_conversion()
             << "q: \n"
             << p2.first.second
             << "\n"
-    "cov2: \n"
+               "cov2: \n"
             << p2.second << std::endl;
 
   std::cout << "Composition t: "
@@ -405,11 +427,11 @@ void test_pose_with_covariance_composition_conversion()
             << "q: \n"
             << p3.first.second
             << "\n"
-    "cov: \n"
+               "cov: \n"
             << p3.second << std::endl;
 }
 
-int main(int argc, char ** argv)
+int main(int argc, char** argv)
 {
   // test_pose_composition_conversion();
   // test_pose_with_covariance_composition_conversion();

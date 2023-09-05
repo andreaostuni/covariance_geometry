@@ -1,3 +1,17 @@
+// Copyright 2023 Andrea Ostuni, Giacomo Franchini - PIC4SeR
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include "covariance_geometry/pose_covariance_composition.hpp"
 
 #include <iostream>
@@ -8,8 +22,7 @@
 namespace covariance_geometry
 {
 
-void ComposePoseRPYCovarianceRPY(
-  const PoseRPYCovariance & a, const PoseRPYCovariance & b, PoseRPYCovariance & out)
+void ComposePoseRPYCovarianceRPY(const PoseRPYCovariance& a, const PoseRPYCovariance& b, PoseRPYCovariance& out)
 {
   // Make a way around them and consider instead this path:
   //
@@ -37,9 +50,8 @@ void ComposePoseRPYCovarianceRPY(
 }
 
 // TODO: ComposePoseQuaternionCovarianceRPY using ComposePoseRPYCovariance
-void ComposePoseQuaternionCovarianceRPY(
-  const PoseQuaternionCovarianceRPY & a, const PoseQuaternionCovarianceRPY & b,
-  PoseQuaternionCovarianceRPY & out)
+void ComposePoseQuaternionCovarianceRPY(const PoseQuaternionCovarianceRPY& a, const PoseQuaternionCovarianceRPY& b,
+                                        PoseQuaternionCovarianceRPY& out)
 {
   //  Make a way around them and consider instead this path:
   //
@@ -67,9 +79,8 @@ void ComposePoseQuaternionCovarianceRPY(
   Pose3DQuaternionCovarianceTo3DQuaternionCovarianceRPY(out_q, out);
 }
 
-void ComposePoseQuaternionCovariance(
-  const PoseQuaternionCovariance & a, const PoseQuaternionCovariance & b,
-  PoseQuaternionCovariance & out)
+void ComposePoseQuaternionCovariance(const PoseQuaternionCovariance& a, const PoseQuaternionCovariance& b,
+                                     PoseQuaternionCovariance& out)
 {
   // Equation 5.7 pag. 31 A tutorial on SE(3) transformation parameterizations and on-manifold optimization
   // cov(a * b) = J_a * cov(a) * J_a^T + J_b * cov(b) * J_b^T
@@ -120,15 +131,13 @@ void ComposePoseQuaternionCovariance(
   JacobianPosePoseCompositionB(pose_a, d_fqc_db);
   jacobian_b = jacobian_qn_b * d_fqc_db;
 
-  cov_out =
-    jacobian_a * cov_a * jacobian_a.transpose() + jacobian_b * cov_b * jacobian_b.transpose();
+  cov_out = jacobian_a * cov_a * jacobian_a.transpose() + jacobian_b * cov_b * jacobian_b.transpose();
 
   out.first = pose_out;
   out.second = cov_out;
 }
 
-void JacobianPosePoseCompositionA(
-  const PoseQuaternion & pose_a, const PoseQuaternion & pose_b, Eigen::Matrix7d & jacobian)
+void JacobianPosePoseCompositionA(const PoseQuaternion& pose_a, const PoseQuaternion& pose_b, Eigen::Matrix7d& jacobian)
 {
   auto qx_b = pose_b.second.x();
   auto qy_b = pose_b.second.y();
@@ -162,7 +171,7 @@ void JacobianPosePoseCompositionA(
   jacobian(6, 6) = qw_b;
 }
 
-void JacobianPosePoseCompositionB(const PoseQuaternion & pose_a, Eigen::Matrix7d & jacobian)
+void JacobianPosePoseCompositionB(const PoseQuaternion& pose_a, Eigen::Matrix7d& jacobian)
 {
   auto qx_a = pose_a.second.x();
   auto qy_a = pose_a.second.y();
@@ -197,8 +206,7 @@ void JacobianPosePoseCompositionB(const PoseQuaternion & pose_a, Eigen::Matrix7d
   jacobian(6, 6) = qw_a;
 }
 
-void JacobianPosePointComposition(
-  const PoseQuaternion & pose, const Eigen::Vector3d & point, Eigen::Matrix3_7d & jacobian)
+void JacobianPosePointComposition(const PoseQuaternion& pose, const Eigen::Vector3d& point, Eigen::Matrix3_7d& jacobian)
 {
   // Equation 3.8 pag. 24 A tutorial on SE(3) transformation parameterizations and on-manifold optimization
   Eigen::Matrix3_4d j34_temp;
@@ -207,7 +215,7 @@ void JacobianPosePointComposition(
   jacobian.block<3, 4>(0, 3) = j34_temp;
 }
 
-void JacobianPosePointComposition(const PoseQuaternion & pose, Eigen::Matrix3d & jacobian)
+void JacobianPosePointComposition(const PoseQuaternion& pose, Eigen::Matrix3d& jacobian)
 {
   // Equation 3.10 pag. 24 A tutorial on SE(3) transformation parameterizations and on-manifold optimization
   auto qx = pose.second.x();
@@ -228,9 +236,8 @@ void JacobianPosePointComposition(const PoseQuaternion & pose, Eigen::Matrix3d &
   jacobian(2, 2) = 1 / 2 - qx * qx - qy * qy;
 }
 
-void JacobianQuaternionPointComposition(
-  const Eigen::Quaterniond & quaternion, const Eigen::Vector3d & point,
-  Eigen::Matrix3_4d & jacobian)
+void JacobianQuaternionPointComposition(const Eigen::Quaterniond& quaternion, const Eigen::Vector3d& point,
+                                        Eigen::Matrix3_4d& jacobian)
 {
   auto qx = quaternion.x();
   auto qy = quaternion.y();
