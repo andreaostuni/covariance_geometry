@@ -1,0 +1,38 @@
+name: Build and Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  schedule:
+    - cron: '0 4 * * *' # every day at 4 AM (UTC)
+
+jobs:
+  humble_testing_ci:
+    name: Humble Testing
+    strategy:
+      matrix:
+        distro: [humble]
+        repo: [testing]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: 'ros-industrial/industrial_ci@master'
+        env:
+          ROS_DISTRO: ${{matrix.distro}}
+          ROS_REPO: ${{matrix.repo}}
+  humble_main_ci:
+    name: Humble Main
+    strategy:
+      matrix:
+        distro: [humble]
+        repo: [main]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: 'ros-industrial/industrial_ci@master'
+        env:
+          ROS_DISTRO: ${{matrix.distro}}
+          ROS_REPO: ${{matrix.repo}}
