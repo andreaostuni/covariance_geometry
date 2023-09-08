@@ -30,7 +30,7 @@
 namespace covariance_geometry
 {
 
-template <typename T>
+template<typename T>
 bool isApprox(const T & a, const T & b, double epsilon = 1e-6)
 {
   bool pose_equality = isApprox(a.first, b.first, epsilon);
@@ -44,7 +44,7 @@ bool isApprox(const T & a, const T & b, double epsilon = 1e-6)
   return pose_equality && cov_equality;
 }
 
-template <>
+template<>
 bool isApprox(const PoseQuaternion & a, const PoseQuaternion & b, double epsilon)
 {
   GTEST_COUT << "a.first: " << a.first.transpose() << "\t";
@@ -54,7 +54,7 @@ bool isApprox(const PoseQuaternion & a, const PoseQuaternion & b, double epsilon
   return a.first.isApprox(b.first, epsilon) && a.second.isApprox(b.second, epsilon);
 }
 
-template <>
+template<>
 bool isApprox(const PoseRPY & a, const PoseRPY & b, double epsilon)
 {
   GTEST_COUT << "a.first: " << a.first.transpose() << "\t";
@@ -64,14 +64,14 @@ bool isApprox(const PoseRPY & a, const PoseRPY & b, double epsilon)
   return a.first.isApprox(b.first, epsilon) && a.second.isApprox(b.second, epsilon);
 }
 
-template <typename T, typename U>
+template<typename T, typename U>
 bool MRPTtoEigen(const T & mrpt_pose, U & eigen_pose)
 {
   eigen_pose.second = mrpt_pose.cov.asEigen();
   return MRPTtoEigen(mrpt_pose.getPoseMean(), eigen_pose.first);
 }
 
-template <>
+template<>
 bool MRPTtoEigen(const mrpt::poses::CPose3D & mrpt_pose, PoseRPY & eigen_pose)
 {
   // eigen_pose.first = mrpt_pose.m_coords.asEigen();
@@ -85,7 +85,7 @@ bool MRPTtoEigen(const mrpt::poses::CPose3D & mrpt_pose, PoseRPY & eigen_pose)
   return true;
 }
 
-template <>
+template<>
 bool MRPTtoEigen(const mrpt::poses::CPose3D & mrpt_pose, PoseQuaternion & eigen_pose)
 {
   eigen_pose.first = mrpt_pose.m_coords.asEigen();
@@ -95,7 +95,7 @@ bool MRPTtoEigen(const mrpt::poses::CPose3D & mrpt_pose, PoseQuaternion & eigen_
   return true;
 }
 
-template <>
+template<>
 bool MRPTtoEigen(const mrpt::poses::CPose3DQuat & mrpt_pose, PoseQuaternion & eigen_pose)
 {
   eigen_pose.first = mrpt_pose.m_coords.asEigen();
@@ -104,14 +104,14 @@ bool MRPTtoEigen(const mrpt::poses::CPose3DQuat & mrpt_pose, PoseQuaternion & ei
   return true;
 }
 
-template <typename T, typename U>
+template<typename T, typename U>
 bool EigenToMRPT(const T & eigen_pose, U & mrpt_pose)
 {
   mrpt_pose.cov = eigen_pose.second;
   return EigenToMRPT(eigen_pose.first, mrpt_pose.mean);
 }
 
-template <>
+template<>
 bool EigenToMRPT(const PoseRPY & eigen_pose, mrpt::poses::CPose3D & mrpt_pose)
 {
   mrpt_pose = mrpt_pose.FromXYZYawPitchRoll(
@@ -120,7 +120,7 @@ bool EigenToMRPT(const PoseRPY & eigen_pose, mrpt::poses::CPose3D & mrpt_pose)
   return true;
 }
 
-template <>
+template<>
 bool EigenToMRPT(const PoseQuaternion & eigen_pose, mrpt::poses::CPose3D & mrpt_pose)
 {
   mrpt::math::CQuaternionDouble q{
@@ -130,7 +130,7 @@ bool EigenToMRPT(const PoseQuaternion & eigen_pose, mrpt::poses::CPose3D & mrpt_
   return true;
 }
 
-template <>
+template<>
 bool EigenToMRPT(const PoseQuaternion & eigen_pose, mrpt::poses::CPose3DQuat & mrpt_pose)
 {
   mrpt::math::CQuaternionDouble q{

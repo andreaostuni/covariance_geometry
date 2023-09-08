@@ -53,13 +53,13 @@ inline void RPYToQuaternion(const Eigen::Vector3d & rpy, Eigen::Quaterniond & qu
   // quaternion.z() = sin(rpy.z() / 2) * cos(rpy.y() / 2) * cos(rpy.x() / 2) -
   //                  cos(rpy.z() / 2) * sin(rpy.y() / 2) * sin(rpy.x() / 2);
   quaternion.w() = cos(rpy.x() / 2) * cos(rpy.y() / 2) * cos(rpy.z() / 2) +
-                   sin(rpy.x() / 2) * sin(rpy.y() / 2) * sin(rpy.z() / 2);
+    sin(rpy.x() / 2) * sin(rpy.y() / 2) * sin(rpy.z() / 2);
   quaternion.x() = sin(rpy.x() / 2) * cos(rpy.y() / 2) * cos(rpy.z() / 2) -
-                   cos(rpy.x() / 2) * sin(rpy.y() / 2) * sin(rpy.z() / 2);
+    cos(rpy.x() / 2) * sin(rpy.y() / 2) * sin(rpy.z() / 2);
   quaternion.y() = cos(rpy.x() / 2) * sin(rpy.y() / 2) * cos(rpy.z() / 2) +
-                   sin(rpy.x() / 2) * cos(rpy.y() / 2) * sin(rpy.z() / 2);
+    sin(rpy.x() / 2) * cos(rpy.y() / 2) * sin(rpy.z() / 2);
   quaternion.z() = cos(rpy.x() / 2) * cos(rpy.y() / 2) * sin(rpy.z() / 2) -
-                   sin(rpy.x() / 2) * sin(rpy.y() / 2) * cos(rpy.z() / 2);
+    sin(rpy.x() / 2) * sin(rpy.y() / 2) * cos(rpy.z() / 2);
 }
 
 inline void QuaternionToRPY(const Eigen::Quaterniond & quaternion, Eigen::Vector3d & rpy)

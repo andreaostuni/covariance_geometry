@@ -62,13 +62,13 @@ void jacobianQuaternionNormalization(
   // Eigen::Quaterniond is quaternion in the form (x,y,z,w)
   jacobian = Eigen::Matrix4d::Zero();
   jacobian(0, 0) = quaternion.w() * quaternion.w() + quaternion.y() * quaternion.y() +
-                   quaternion.z() * quaternion.z();
+    quaternion.z() * quaternion.z();
   jacobian(1, 1) = quaternion.w() * quaternion.w() + quaternion.x() * quaternion.x() +
-                   quaternion.z() * quaternion.z();
+    quaternion.z() * quaternion.z();
   jacobian(2, 2) = quaternion.w() * quaternion.w() + quaternion.x() * quaternion.x() +
-                   quaternion.y() * quaternion.y();
+    quaternion.y() * quaternion.y();
   jacobian(3, 3) = quaternion.x() * quaternion.x() + quaternion.y() * quaternion.y() +
-                   quaternion.z() * quaternion.z();
+    quaternion.z() * quaternion.z();
   jacobian(0, 1) = -quaternion.x() * quaternion.y();
   jacobian(0, 2) = -quaternion.x() * quaternion.z();
   jacobian(0, 3) = -quaternion.x() * quaternion.w();
@@ -200,21 +200,21 @@ void jacobianQuaternionNormalToRPY(
     jacobian(2, 0) =
       -(2 * qy) /
       ((std::pow((2 * qw * qz + 2 * qx * qy), 2) / std::pow((2 * qy * qy + 2 * qz * qz - 1), 2) +
-        1) *
-       (2 * qy * qy + 2 * qz * qz - 1));
+      1) *
+      (2 * qy * qy + 2 * qz * qz - 1));
     jacobian(2, 1) =
       -((2 * qx) / (2 * qy * qy + 2 * qz * qz - 1) -
-        (4 * qy * (2 * qw * qz + 2 * qx * qy)) / std::pow((2 * qy * qy + 2 * qz * qz - 1), 2)) /
+      (4 * qy * (2 * qw * qz + 2 * qx * qy)) / std::pow((2 * qy * qy + 2 * qz * qz - 1), 2)) /
       (std::pow((2 * qw * qz + 2 * qx * qy), 2) / std::pow((2 * qy * qy + 2 * qz * qz - 1), 2) + 1);
     jacobian(2, 2) =
       -((2 * qw) / (2 * qy * qy + 2 * qz * qz - 1) -
-        (4 * qz * (2 * qw * qz + 2 * qx * qy)) / std::pow((2 * qy * qy + 2 * qz * qz - 1), 2)) /
+      (4 * qz * (2 * qw * qz + 2 * qx * qy)) / std::pow((2 * qy * qy + 2 * qz * qz - 1), 2)) /
       (std::pow((2 * qw * qz + 2 * qx * qy), 2) / std::pow((2 * qy * qy + 2 * qz * qz - 1), 2) + 1);
     jacobian(2, 3) =
       -(2 * qz) /
       ((std::pow((2 * qw * qz + 2 * qx * qy), 2) / std::pow((2 * qy * qy + 2 * qz * qz - 1), 2) +
-        1) *
-       (2 * qy * qy + 2 * qz * qz - 1));
+      1) *
+      (2 * qy * qy + 2 * qz * qz - 1));
 
     // row 2:
     jacobian(1, 0) = -(2 * qz) / std::sqrt(1 - std::pow((2 * qw * qy - 2 * qx * qz), 2));
@@ -225,22 +225,22 @@ void jacobianQuaternionNormalToRPY(
     // row 3 --> becomes row1:
     jacobian(0, 0) =
       -((2 * qw) / (2 * qx * qx + 2 * qy * qy - 1) -
-        (4 * qx * (2 * qw * qx + 2 * qy * qz)) / std::pow((2 * qx * qx + 2 * qy * qy - 1), 2)) /
+      (4 * qx * (2 * qw * qx + 2 * qy * qz)) / std::pow((2 * qx * qx + 2 * qy * qy - 1), 2)) /
       (std::pow((2 * qw * qx + 2 * qy * qz), 2) / std::pow((2 * qx * qx + 2 * qy * qy - 1), 2) + 1);
     jacobian(0, 1) =
       -((2 * qz) / (2 * qx * qx + 2 * qy * qy - 1) -
-        (4 * qy * (2 * qw * qx + 2 * qy * qz)) / std::pow((2 * qx * qx + 2 * qy * qy - 1), 2)) /
+      (4 * qy * (2 * qw * qx + 2 * qy * qz)) / std::pow((2 * qx * qx + 2 * qy * qy - 1), 2)) /
       (std::pow((2 * qw * qx + 2 * qy * qz), 2) / std::pow((2 * qx * qx + 2 * qy * qy - 1), 2) + 1);
     jacobian(0, 2) =
       -(2 * qy) /
       ((std::pow((2 * qw * qx + 2 * qy * qz), 2) / std::pow((2 * qx * qx + 2 * qy * qy - 1), 2) +
-        1) *
-       (2 * qx * qx + 2 * qy * qy - 1));
+      1) *
+      (2 * qx * qx + 2 * qy * qy - 1));
     jacobian(0, 3) =
       -(2 * qx) /
       ((std::pow((2 * qw * qx + 2 * qy * qz), 2) / std::pow((2 * qx * qx + 2 * qy * qy - 1), 2) +
-        1) *
-       (2 * qx * qx + 2 * qy * qy - 1));
+      1) *
+      (2 * qx * qx + 2 * qy * qy - 1));
     return;
   }
 }

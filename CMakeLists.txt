@@ -9,6 +9,11 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(Eigen3 REQUIRED)
 
+set(dependencies
+  Eigen3
+  mrpt-poses
+)
+
 add_library(pose_covariance_geometry SHARED
   src/pose_covariance_composition.cpp
   src/pose_composition.cpp
@@ -17,17 +22,10 @@ add_library(pose_covariance_geometry SHARED
   src/covariance_representation.cpp
 )
 
-# target_include_directories(pose_covariance_geometry PUBLIC include)
 include_directories(PUBLIC
         $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
-
-
-## tests
-# add_executable(test_node test/test.cpp)
-# target_include_directories(test_node PUBLIC include)
-# target_link_libraries(test_node pose_covariance_geometry)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -38,7 +36,6 @@ if(BUILD_TESTING)
   # comment the line when this package is in a git repo and when
   # a copyright and license is added to all source files
   set(ament_cmake_cpplint_FOUND TRUE)
-  set(ament_uncrustify_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 
   find_package(ament_cmake_gtest REQUIRED)

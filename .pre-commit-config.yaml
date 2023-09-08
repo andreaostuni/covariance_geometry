@@ -44,9 +44,9 @@ repos:
         language: system
         entry: ament_copyright
         args: ['--add-missing', 'andrea_giacomo', 'apache2', '.']
-      - id: ament_clang_format
-        name: ament_clang_format
+      - id: ament_uncrustify
+        name: ament_uncrustify
         language: system
         files: \.(c|cc|cxx|cpp|frag|glsl|h|hpp|hxx|ih|ispc|ipp|java|js|m|proto|vert)$
-        entry: ament_clang_format
+        entry: ament_uncrustify
         args: ['--reformat', '.']
