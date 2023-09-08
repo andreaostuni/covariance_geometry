@@ -19,7 +19,8 @@
 namespace covariance_geometry
 {
 
-void ComposePose3DQuaternion(const PoseQuaternion& a, const PoseQuaternion& b, PoseQuaternion& pose_out)
+void ComposePose3DQuaternion(
+  const PoseQuaternion & a, const PoseQuaternion & b, PoseQuaternion & pose_out)
 {
   // Position composition
   pose_out.first = a.first + a.second * b.first;
@@ -27,7 +28,7 @@ void ComposePose3DQuaternion(const PoseQuaternion& a, const PoseQuaternion& b, P
   pose_out.second = a.second * b.second;
 }
 
-void ComposePose3DRPY(const PoseRPY& a, const PoseRPY& b, PoseRPY& pose_out)
+void ComposePose3DRPY(const PoseRPY & a, const PoseRPY & b, PoseRPY & pose_out)
 {
   // Convert to quaternion
   PoseQuaternion a_quaternion, b_quaternion, pose_out_quaternion;

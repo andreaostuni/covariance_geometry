@@ -39,47 +39,51 @@ using PoseQuaternionCovarianceRPY = std::pair<PoseQuaternion, Eigen::Matrix6d>; 
 /*
   / @brief Pose with covariance composition for 6D poses with 6x6 covariance
   */
-void ComposePoseRPYCovarianceRPY(const PoseRPYCovariance& a, const PoseRPYCovariance& b, PoseRPYCovariance& out);
+void ComposePoseRPYCovarianceRPY(
+  const PoseRPYCovariance & a, const PoseRPYCovariance & b, PoseRPYCovariance & out);
 
 /*
   / @brief Pose with covariance composition for 7D poses with 6x6 covariance (ROS convention)
   */
-void ComposePoseQuaternionCovarianceRPY(const PoseQuaternionCovarianceRPY& a, const PoseQuaternionCovarianceRPY& b,
-                                        PoseQuaternionCovarianceRPY& out);
+void ComposePoseQuaternionCovarianceRPY(
+  const PoseQuaternionCovarianceRPY & a, const PoseQuaternionCovarianceRPY & b,
+  PoseQuaternionCovarianceRPY & out);
 
 /*
   / @brief Pose with covariance composition for 7D poses with 7x7 covariance
   */
-void ComposePoseQuaternionCovariance(const PoseQuaternionCovariance& a, const PoseQuaternionCovariance& b,
-                                     PoseQuaternionCovariance& out);
+void ComposePoseQuaternionCovariance(
+  const PoseQuaternionCovariance & a, const PoseQuaternionCovariance & b,
+  PoseQuaternionCovariance & out);
 
 /*
   / @brief Compute pose-pose composition function jacobian wrt pose_a
   */
-void JacobianPosePoseCompositionA(const PoseQuaternion& pose_a, const PoseQuaternion& pose_b,
-                                  Eigen::Matrix7d& jacobian);
+void JacobianPosePoseCompositionA(
+  const PoseQuaternion & pose_a, const PoseQuaternion & pose_b, Eigen::Matrix7d & jacobian);
 
 /*
   / @brief Compute pose-pose composition function jacobian wrt pose_b
   */
-void JacobianPosePoseCompositionB(const PoseQuaternion& pose_a, Eigen::Matrix7d& jacobian);
+void JacobianPosePoseCompositionB(const PoseQuaternion & pose_a, Eigen::Matrix7d & jacobian);
 
 /*
   / @brief Compute pose-point composition function jacobian wrt pose
   */
-void JacobianPosePointComposition(const PoseQuaternion& pose, const Eigen::Vector3d& point,
-                                  Eigen::Matrix3_7d& jacobian);
+void JacobianPosePointComposition(
+  const PoseQuaternion & pose, const Eigen::Vector3d & point, Eigen::Matrix3_7d & jacobian);
 
 /*
   / @brief Compute pose-point composition function jacobian wrt point
   */
-void JacobianPosePointComposition(const PoseQuaternion& pose, Eigen::Matrix3d& jacobian);
+void JacobianPosePointComposition(const PoseQuaternion & pose, Eigen::Matrix3d & jacobian);
 
 /*
   / @brief Compute pose-point composition function jacobian wrt pose quaternion
   */
-void JacobianQuaternionPointComposition(const Eigen::Quaterniond& quaternion, const Eigen::Vector3d& point,
-                                        Eigen::Matrix3_4d& jacobian);
+void JacobianQuaternionPointComposition(
+  const Eigen::Quaterniond & quaternion, const Eigen::Vector3d & point,
+  Eigen::Matrix3_4d & jacobian);
 
 }  // namespace covariance_geometry
 

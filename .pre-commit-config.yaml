@@ -32,11 +32,11 @@ repos:
     hooks:
       - id: black
 
-  - repo: https://github.com/pocc/pre-commit-hooks
-    rev: v1.3.5
-    hooks:
-      - id: clang-format
-        args: [ --fallback-style=none, -i]
+  # - repo: https://github.com/pocc/pre-commit-hooks
+  #   rev: v1.3.5
+  #   hooks:
+  #     - id: clang-format
+  #       args: [ --fallback-style=none, -i]
   - repo: local
     hooks:
       - id: ament_copyright
@@ -44,3 +44,9 @@ repos:
         language: system
         entry: ament_copyright
         args: ['--add-missing', 'andrea_giacomo', 'apache2', '.']
+      - id: ament_clang_format
+        name: ament_clang_format
+        language: system
+        files: \.(c|cc|cxx|cpp|frag|glsl|h|hpp|hxx|ih|ispc|ipp|java|js|m|proto|vert)$
+        entry: ament_clang_format
+        args: ['--reformat', '.']

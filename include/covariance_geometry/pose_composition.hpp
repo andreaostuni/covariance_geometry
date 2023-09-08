@@ -29,13 +29,14 @@ using PoseRPY = std::pair<Eigen::Vector3d, Eigen::Vector3d>;
   / @brief Pose composition for 6D poses in quaternion form
   */
 
-void ComposePose3DQuaternion(const PoseQuaternion& a, const PoseQuaternion& b, PoseQuaternion& pose_out);
+void ComposePose3DQuaternion(
+  const PoseQuaternion & a, const PoseQuaternion & b, PoseQuaternion & pose_out);
 
 /*
   / @brief Pose composition for 6D poses in RPY form
   */
 
-void ComposePose3DRPY(const PoseRPY& a, const PoseRPY& b, PoseRPY& pose_out);
+void ComposePose3DRPY(const PoseRPY & a, const PoseRPY & b, PoseRPY & pose_out);
 
 }  // namespace covariance_geometry
 

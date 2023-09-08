@@ -19,6 +19,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
-    # - name: Install clang-format
-    #   run: sudo apt-get install clang-format
+    - name: Install ament_cmake
+      run: sudo apt-get install ament-cmake
+    - name: Install ament_lint
+      run: sudo apt-get install ament-lint
     - uses: pre-commit/action@v2.0.0

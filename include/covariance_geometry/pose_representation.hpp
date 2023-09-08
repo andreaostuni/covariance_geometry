@@ -27,22 +27,22 @@ using PoseRPY = std::pair<Eigen::Vector3d, Eigen::Vector3d>;
 /*
   / @brief Convert a pose from RPY representation to quaternion representation
   */
-void Pose3DRPYTo3DQuaternion(const PoseRPY& pose_in, PoseQuaternion& pose_out);
+void Pose3DRPYTo3DQuaternion(const PoseRPY & pose_in, PoseQuaternion & pose_out);
 
 /*
   / @brief Convert a pose from quaternion representation to RPY representation
   */
-void Pose3DQuaternionTo3DRPY(const PoseQuaternion& pose_in, PoseRPY& pose_out);
+void Pose3DQuaternionTo3DRPY(const PoseQuaternion & pose_in, PoseRPY & pose_out);
 
 /*
   / @brief Convert a RPY representation to quaternion representation
   */
-void RPYToQuaternion(const Eigen::Vector3d& rpy, Eigen::Quaterniond& quaternion);
+void RPYToQuaternion(const Eigen::Vector3d & rpy, Eigen::Quaterniond & quaternion);
 
 /*
   / @brief Convert a quaternion representation to RPY representation
   */
-void QuaternionToRPY(const Eigen::Quaterniond& quaternion, Eigen::Vector3d& rpy);
+void QuaternionToRPY(const Eigen::Quaterniond & quaternion, Eigen::Vector3d & rpy);
 
 }  // namespace covariance_geometry
 
