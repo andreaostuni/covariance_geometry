@@ -159,8 +159,8 @@ TEST(PoseConversion, CyclicPoseConversionRPY)
 {
   PoseQuaternion pq1;
   PoseRPY pr1, pr2;
-  pq1.first = {1, 0, 0};
-  pq1.second = {0.9128709, 0.4082483, 0, 0};
+  pr1.first = {1, 0, 0};
+  pr1.second = {0.8545253, 0.1538007, 0.1742029};
   Pose3DRPYTo3DQuaternion(pr1, pq1);
   Pose3DQuaternionTo3DRPY(pq1, pr2);
   EXPECT_TRUE(isApprox(pr1, pr2));
