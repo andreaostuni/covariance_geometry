@@ -38,6 +38,11 @@ void ComposePose3DQuaternion(
 
 void ComposePose3DRPY(const PoseRPY & a, const PoseRPY & b, PoseRPY & pose_out);
 
+/*
+  / @brief Ensure that the quaternion has a positive real part (w > 0)
+  */
+
+void ensurePositiveRealPart(Eigen::Quaterniond & quat);
 }  // namespace covariance_geometry
 
 #endif  // COVARIANCE_GEOMETRY_POSE_COMPOSITION_HPP

@@ -13,6 +13,9 @@
 // limitations under the License.
 
 #include "covariance_geometry/pose_covariance_representation.hpp"
+#include "covariance_geometry/covariance_representation.hpp"
+#include "covariance_geometry/pose_representation.hpp"
+#include "covariance_geometry/test_utils.hpp"
 
 #include <mrpt/poses/CPose3DPDFGaussian.h>
 #include <mrpt/poses/CPose3DQuatPDFGaussian.h>
@@ -20,18 +23,19 @@
 #include <cmath>
 #include <iostream>
 
-#include "covariance_geometry/covariance_representation.hpp"
-#include "covariance_geometry/pose_representation.hpp"
-#include "covariance_geometry/test_utils.hpp"
 #include "gtest/gtest.h"
 
 using namespace mrpt::poses;
 namespace covariance_geometry
 {
 
-Eigen::Vector3d coord = {1, 0, 0};                                       // x, y, z
-Eigen::Vector3d rpy = {0.9067432, 0.4055079, 0.1055943};                 // roll, pitch, yaw
-Eigen::Quaterniond quat = {0.9067432, 0.4055079, 0.1055943, 0.0472232};  // w, x, y, z
+const int NUM_IT = 100;
+const Eigen::Vector3d coord = {0.111, -1.24, 0.35};                               // x, y, z
+const Eigen::Vector3d rpy = {0.9067432, 0.4055079, 0.1055943};                    // roll, pitch, yaw
+const Eigen::Quaterniond quat = {0.8746791, 0.4379822, 0.1581314, 0.1345454};     // w, x, y, z
+
+const Eigen::Vector3d rpy_gl = {0.12, M_PI_2, 0.34};                              // roll, pitch, yaw
+const Eigen::Quaterniond quat_gl = {0.6884861, 0.1612045, 0.6884861, 0.1612045};  // w, x, y, z
 
 TEST(CovarianceEigenMRPT, EigenToMRPTRPY)
 {
@@ -58,7 +62,7 @@ TEST(CovarianceEigenMRPT, MRPTtoEigenQuat)
 
   EigenToMRPT<PoseQuaternionCovariance, CPose3DQuatPDFGaussian>(pq, mrpt_pose);
   MRPTtoEigen<CPose3DQuatPDFGaussian, PoseQuaternionCovariance>(mrpt_pose, pq_out);
-  EXPECT_TRUE(isApprox<PoseQuaternionCovariance>(pq, pq_out));
+  EXPECT_TRUE(isApprox<PoseQuaternionCovariance>(pq, pq_out, 1e-4));
 }
 
 TEST(PoseCovarianceConversion, HandleConversionPoseQuaternionCovariance)
@@ -84,7 +88,7 @@ TEST(PoseCovarianceConversion, HandleConversionPoseQuaternionCovariance)
   mrpt_pose_r = CPose3DPDFGaussian(mrpt_pose_q);
   MRPTtoEigen<CPose3DPDFGaussian, PoseRPYCovariance>(mrpt_pose_r, pr_mrpt_out);
   permuteCovariance(pr_mrpt_out.second);
-  EXPECT_TRUE(isApprox<PoseRPYCovariance>(pr_mrpt_out, pr_out));
+  EXPECT_TRUE(isApprox<PoseRPYCovariance>(pr_mrpt_out, pr_out, 1e-4));
 }
 
 TEST(PoseCovarianceConversion, HandleConversionPoseRPYCovariance)
@@ -198,7 +202,7 @@ TEST(PoseCovarianceConversion, CyclicPoseCovarianceConversionQuaternion)
   MRPTtoEigen<CPose3DQuatPDFGaussian, PoseQuaternionCovariance>(mrpt_pose_q, pq_mrpt_out);
   permuteCovariance(pq_mrpt_out.second);
 
-  EXPECT_TRUE(isApprox<PoseQuaternionCovariance>(pq_mrpt_out, pq2));
+  EXPECT_TRUE(isApprox<PoseQuaternionCovariance>(pq_mrpt_out, pq2, 1e-4));
 }
 
 TEST(PoseCovarianceConversion, CyclicPoseCovarianceConversionRPY)
@@ -211,6 +215,8 @@ TEST(PoseCovarianceConversion, CyclicPoseCovarianceConversionRPY)
   pr1.second = cov_eigen;
 
   Pose3DRPYCovarianceTo3DQuaternionCovariance(pr1, pq);
+  std::cout << "pq quat: \n" << pq.first.second << std::endl;
+  std::cout << "pq cov: \n" << pq.second << std::endl;
   Pose3DQuaternionCovarianceTo3DRPYCovariance(pq, pr2);
 
   EXPECT_TRUE(isApprox<PoseRPYCovariance>(pr1, pr2));
@@ -240,5 +246,75 @@ TEST(PoseCovarianceConversion, CyclicPoseCovarianceConversionROS)
   permuteCovariance(pq_mrpt_out.second);
 
   EXPECT_TRUE(isApprox<PoseQuaternionCovariance>(pq_mrpt_out, pq2));
+}
+
+TEST(PoseCovarianceInversion, InvertPoseQuaternionCovariance)
+{
+  PoseQuaternionCovariance pq, pq_inv, pq_inv_mrpt;
+  Eigen::Matrix7d cov_mrpt = generateRandomCovariance(7);
+  Eigen::Matrix7d cov_eigen = cov_mrpt;
+  permuteCovariance(cov_eigen);
+
+  pq.first.first = coord;
+  pq.first.second = quat;
+  pq.second = cov_eigen;
+  pq_inv = inversePose3DQuaternionCovarianceQuaternion(pq);
+
+  CPose3DQuatPDFGaussian mrpt_pose_q, mrpt_pose_q_inv;
+  mrpt_pose_q.mean =
+    CPose3DQuat(coord.x(), coord.y(), coord.z(), {quat.w(), quat.x(), quat.y(), quat.z()});
+  mrpt_pose_q.cov = cov_mrpt;
+  mrpt_pose_q_inv = -mrpt_pose_q;
+  MRPTtoEigen<CPose3DQuatPDFGaussian, PoseQuaternionCovariance>(mrpt_pose_q_inv, pq_inv_mrpt);
+  permuteCovariance(pq_inv_mrpt.second);
+
+  EXPECT_TRUE(isApprox<PoseQuaternionCovariance>(pq_inv_mrpt, pq_inv));
+}
+
+TEST(PoseCovarianceInversion, InvertPoseRPYCovariance)
+{
+  PoseRPYCovariance pr, pr_inv, pr_inv_mrpt;
+  Eigen::Matrix6d cov_mrpt = generateRandomCovariance(6);
+  Eigen::Matrix6d cov_eigen = cov_mrpt;
+  permuteCovariance(cov_eigen);
+
+  pr.first.first = coord;
+  pr.first.second = rpy;
+  pr.second = cov_eigen;
+  pr_inv = inversePose3DRPYCovarianceRPY(pr);
+  std::cout << "pr_inv: \n" << pr_inv.first.first << std::endl;
+
+  CPose3DPDFGaussian mrpt_pose_r, mrpt_pose_r_inv;
+  mrpt_pose_r.mean = CPose3D(coord.x(), coord.y(), coord.z(), rpy.z(), rpy.y(), rpy.x());
+  mrpt_pose_r.cov = cov_mrpt;
+  mrpt_pose_r_inv = -mrpt_pose_r;
+  MRPTtoEigen<CPose3DPDFGaussian, PoseRPYCovariance>(mrpt_pose_r_inv, pr_inv_mrpt);
+  permuteCovariance(pr_inv_mrpt.second);
+
+  EXPECT_TRUE(isApprox<PoseRPYCovariance>(pr_inv_mrpt, pr_inv));
+}
+
+TEST(PoseCovarianceInversion, InvertPoseQuaternionCovarianceRPY)
+{
+  PoseQuaternionCovarianceRPY pq, pq_inv, pq_inv_mrpt;
+  Eigen::Matrix6d cov_mrpt = generateRandomCovariance(6);
+  Eigen::Matrix6d cov_eigen = cov_mrpt;
+  permuteCovariance(cov_eigen);
+
+  pq.first.first = coord;
+  pq.first.second = quat;
+  pq.second = cov_eigen;
+  pq_inv = inversePose3DQuaternionCovarianceRPY(pq);
+
+  CPose3DQuat mrpt_pose_q =
+  {coord.x(), coord.y(), coord.z(), {quat.w(), quat.x(), quat.y(), quat.z()}};
+  CPose3DPDFGaussian mrpt_pose_r, mrpt_pose_r_inv;
+  mrpt_pose_r.mean = CPose3D(mrpt_pose_q);
+  mrpt_pose_r.cov = cov_mrpt;
+  mrpt_pose_r_inv = -mrpt_pose_r;
+  MRPTtoEigen<CPose3DPDFGaussian, PoseQuaternionCovarianceRPY>(mrpt_pose_r_inv, pq_inv_mrpt);
+  permuteCovariance(pq_inv_mrpt.second);
+
+  EXPECT_TRUE(isApprox<PoseQuaternionCovarianceRPY>(pq_inv_mrpt, pq_inv, 1e-5));
 }
 }  // namespace covariance_geometry

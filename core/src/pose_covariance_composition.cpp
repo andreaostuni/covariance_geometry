@@ -13,12 +13,10 @@
 // limitations under the License.
 
 #include "covariance_geometry/pose_covariance_composition.hpp"
-
-#include <iostream>
-
 #include "covariance_geometry/pose_composition.hpp"
 #include "covariance_geometry/pose_covariance_representation.hpp"
 
+#include <iostream>
 namespace covariance_geometry
 {
 
@@ -236,24 +234,23 @@ void JacobianQuaternionPointComposition(
   auto az = point.z();
 
   // Equation 3.9 pag. 24 A tutorial on SE(3) transformation parameterizations and on-manifold optimization
-  jacobian(0, 0) = 2 * (qy * ay + qz * az);
-  jacobian(0, 1) = 2 * (-2 * qy * ax + qx * ay + qw * az);
-  jacobian(0, 2) = 2 * (-2 * qz * ax - qw * ay + qx * az);
-  jacobian(0, 3) = 2 * (-qz * ay + qy * az);
+  jacobian(0, 0) = qy * ay + qz * az;
+  jacobian(0, 1) = -2 * qy * ax + qx * ay + qw * az;
+  jacobian(0, 2) = -2 * qz * ax - qw * ay + qx * az;
+  jacobian(0, 3) = -qz * ay + qy * az;
 
-  jacobian(1, 0) = 2 * (qy * ax - 2 * qx * ay - qw * az);
-  jacobian(1, 1) = 2 * (qx * ax + qz * az);
-  jacobian(1, 2) = 2 * (qw * ax - 2 * qz * ay + qy * az);
-  jacobian(1, 3) = 2 * (qz * ax - qx * ay);
+  jacobian(1, 0) = qy * ax - 2 * qx * ay - qw * az;
+  jacobian(1, 1) = qx * ax + qz * az;
+  jacobian(1, 2) = qw * ax - 2 * qz * ay + qy * az;
+  jacobian(1, 3) = qz * ax - qx * az;
 
-  jacobian(2, 0) = 2 * (qz * ax + qw * ay - 2 * qx * az);
-  jacobian(2, 1) = 2 * (-qw * ax + qz * ay - 2 * qy * az);
-  jacobian(2, 2) = 2 * (qx * ax + qy * ay);
-  jacobian(2, 3) = 2 * (-qy * ax + qx * ay);
+  jacobian(2, 0) = qz * ax + qw * ay - 2 * qx * az;
+  jacobian(2, 1) = -qw * ax + qz * ay - 2 * qy * az;
+  jacobian(2, 2) = qx * ax + qy * ay;
+  jacobian(2, 3) = -qy * ax + qx * ay;
 
   Eigen::Matrix4d jqn;
   jacobianQuaternionNormalization(quaternion, jqn);
-  jacobian = jacobian * jqn;
+  jacobian = 2 * jacobian * jqn;
 }
-
 }  // namespace covariance_geometry

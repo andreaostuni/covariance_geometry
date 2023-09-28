@@ -13,11 +13,20 @@
 // limitations under the License.
 
 #include "covariance_geometry/pose_composition.hpp"
-
 #include "covariance_geometry/pose_representation.hpp"
 
 namespace covariance_geometry
 {
+
+void ensurePositiveRealPart(Eigen::Quaterniond & quat)
+{
+  if (quat.w() < 0) {
+    quat.w() = -quat.w();
+    quat.x() = -quat.x();
+    quat.y() = -quat.y();
+    quat.z() = -quat.z();
+  }
+}
 
 void ComposePose3DQuaternion(
   const PoseQuaternion & a, const PoseQuaternion & b, PoseQuaternion & pose_out)
@@ -26,6 +35,8 @@ void ComposePose3DQuaternion(
   pose_out.first = a.first + a.second * b.first;
   // Quaternion composition
   pose_out.second = a.second * b.second;
+  ensurePositiveRealPart(pose_out.second);
+  pose_out.second.normalize();
 }
 
 void ComposePose3DRPY(const PoseRPY & a, const PoseRPY & b, PoseRPY & pose_out)
@@ -34,10 +45,9 @@ void ComposePose3DRPY(const PoseRPY & a, const PoseRPY & b, PoseRPY & pose_out)
   PoseQuaternion a_quaternion, b_quaternion, pose_out_quaternion;
   Pose3DRPYTo3DQuaternion(a, a_quaternion);
   Pose3DRPYTo3DQuaternion(b, b_quaternion);
-  // Compose
+  // Pose composition
   ComposePose3DQuaternion(a_quaternion, b_quaternion, pose_out_quaternion);
   // Convert back to RPY
   Pose3DQuaternionTo3DRPY(pose_out_quaternion, pose_out);
 }
-
 }  // namespace covariance_geometry

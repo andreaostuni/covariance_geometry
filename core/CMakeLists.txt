@@ -13,23 +13,19 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Eigen3 REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED
-  src/pose_covariance_composition.cpp
-  src/pose_composition.cpp
   src/pose_representation.cpp
-  src/pose_covariance_representation.cpp
   src/covariance_representation.cpp
+  src/pose_composition.cpp
+  src/pose_covariance_representation.cpp
+  src/pose_covariance_composition.cpp
 )
 
-target_include_directories(${PROJECT_NAME} INTERFACE
+target_include_directories(${PROJECT_NAME}
+  INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
   ${EIGEN3_INCLUDE_DIR}
 )
-
-# include_directories(PUBLIC
-#         $<INSTALL_INTERFACE:include>
-#         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-# )
 
 if(BUILD_TESTING)
   find_package(GTest REQUIRED)
@@ -65,6 +61,8 @@ install(TARGETS ${PROJECT_NAME}
   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
+install(DIRECTORY include/ DESTINATION include)
+
 export(TARGETS ${PROJECT_NAME}
   NAMESPACE ${PROJECT_NAME}::
   FILE ${PROJECT_NAME}-targets.cmake)
@@ -76,8 +74,16 @@ install(EXPORT ${PROJECT_NAME}-targets
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
 )
 
+include(CMakePackageConfigHelpers)
+# generate the config file that includes the exports
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
+  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+  INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+  NO_SET_AND_CHECK_MACRO
+  NO_CHECK_REQUIRED_COMPONENTS_MACRO
+  )
+
 install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
-  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
   )

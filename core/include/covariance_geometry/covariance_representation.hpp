@@ -26,7 +26,11 @@ using Matrix6_7d = Eigen::Matrix<double, 6, 7>;
 using Matrix7_6d = Eigen::Matrix<double, 7, 6>;
 using Matrix3_4d = Eigen::Matrix<double, 3, 4>;
 using Matrix4_3d = Eigen::Matrix<double, 4, 3>;
+using Matrix3_7d = Eigen::Matrix<double, 3, 7>;
 }  // namespace Eigen
+
+using PoseQuaternion = std::pair<Eigen::Vector3d, Eigen::Quaterniond>;
+using PoseRPY = std::pair<Eigen::Vector3d, Eigen::Vector3d>;
 
 namespace covariance_geometry
 {

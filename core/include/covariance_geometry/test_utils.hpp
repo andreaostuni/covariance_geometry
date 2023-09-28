@@ -16,16 +16,19 @@
 #define COVARIANCE_GEOMETRY_TEST_UTILS_HPP
 #define GTEST_HAS_FILE_SYSTEM 1
 
+#include "covariance_geometry/pose_covariance_representation.hpp"
+#include "covariance_geometry/pose_representation.hpp"
+#include "covariance_geometry/pose_composition.hpp"
+
 #include <mrpt/poses/CPose3DPDFGaussian.h>
 #include <mrpt/poses/CPose3DQuatPDFGaussian.h>
 
 #include <iostream>
+#include <iomanip>
 
-#include "covariance_geometry/pose_covariance_representation.hpp"
-#include "covariance_geometry/pose_representation.hpp"
 #include "gtest/gtest.h"
 
-#define GTEST_COUT std::cerr << "[          ] [ INFO ] "
+#define GTEST_COUT std::cerr << "[          ] [ INFO ] " << std::setprecision(10)
 
 namespace covariance_geometry
 {
@@ -39,6 +42,7 @@ bool isApprox(const T & a, const T & b, double epsilon = 1e-6)
              << a.second << std::endl;
   GTEST_COUT << "b.covariance: "
              << "\n"
+    //  << std::setprecision(10)
              << b.second << std::endl;
   bool cov_equality = a.second.isApprox(b.second, epsilon);
   return pose_equality && cov_equality;
@@ -51,7 +55,9 @@ bool isApprox(const PoseQuaternion & a, const PoseQuaternion & b, double epsilon
   std::cout << "a.second: " << a.second << std::endl;
   GTEST_COUT << "b.first: " << b.first.transpose() << "\t";
   std::cout << "b.second: " << b.second << std::endl;
-  return a.first.isApprox(b.first, epsilon) && a.second.isApprox(b.second, epsilon);
+  Eigen::Quaterniond qa = a.second;
+  ensurePositiveRealPart(qa);
+  return a.first.isApprox(b.first, epsilon) && qa.isApprox(b.second, epsilon);
 }
 
 template<>
@@ -74,8 +80,6 @@ bool MRPTtoEigen(const T & mrpt_pose, U & eigen_pose)
 template<>
 bool MRPTtoEigen(const mrpt::poses::CPose3D & mrpt_pose, PoseRPY & eigen_pose)
 {
-  // eigen_pose.first = mrpt_pose.m_coords.asEigen();
-  // mrpt_pose.getYawPitchRoll(eigen_pose.second(2), eigen_pose.second(1), eigen_pose.second(0));
   eigen_pose.first.x() = mrpt_pose.x();
   eigen_pose.first.y() = mrpt_pose.y();
   eigen_pose.first.z() = mrpt_pose.z();

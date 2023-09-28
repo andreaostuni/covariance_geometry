@@ -24,9 +24,13 @@ using namespace mrpt::poses;
 namespace covariance_geometry
 {
 
-Eigen::Vector3d coord = {1, 0, 0};                                       // x, y, z
-Eigen::Vector3d rpy = {0.9067432, 0.4055079, 0.1055943};                 // roll, pitch, yaw
-Eigen::Quaterniond quat = {0.9067432, 0.4055079, 0.1055943, 0.0472232};  // w, x, y, z
+const int NUM_IT = 50;
+const Eigen::Vector3d coord = {10.0, 0.15465, -3.0};                               // x, y, z
+const Eigen::Vector3d rpy = {0.9067432, 0.4055079, 0.1055943};                    // roll, pitch, yaw
+const Eigen::Quaterniond quat = {0.8746791, 0.4379822, 0.1581314, 0.1345454};     // w, x, y, z
+
+const Eigen::Vector3d rpy_gl = {0.12, M_PI_2, 0.34};                              // roll, pitch, yaw
+const Eigen::Quaterniond quat_gl = {0.6884861, 0.1612045, 0.6884861, 0.1612045};  // w, x, y, z
 
 TEST(PoseCovarianceComposition, HandleZeroPoseQuaternion)
 {
@@ -38,8 +42,8 @@ TEST(PoseCovarianceComposition, HandleZeroPoseQuaternion)
   pq.first.first = coord;
   pq.first.second = quat;
   pq.second = cov_eigen;
-  identity.first.first = {0, 0, 0};
-  identity.first.second = {1, 0, 0, 0};
+  identity.first.first = Eigen::Vector3d::Zero();
+  identity.first.second = Eigen::Quaterniond::Identity();
   identity.second = Eigen::Matrix7d::Identity();
   ComposePoseQuaternionCovariance(pq, identity, pq_out);
 
@@ -65,8 +69,8 @@ TEST(PoseCovarianceComposition, HandleZeroPoseRPY)
   pr.first.first = coord;
   pr.first.second = rpy;
   pr.second = cov_eigen;
-  identity.first.first = {0.0, 0.0, 0.0};
-  identity.first.second = {0.0, 0.0, 0.0};
+  identity.first.first = Eigen::Vector3d::Zero();
+  identity.first.second = Eigen::Vector3d::Zero();
   identity.second = Eigen::Matrix6d::Identity();
   ComposePoseRPYCovarianceRPY(pr, identity, pr_out);
 
@@ -93,8 +97,8 @@ TEST(PoseCovarianceComposition, HandleZeroPoseROS)
   pq.first.first = coord;
   pq.first.second = quat;
   pq.second = cov_eigen;
-  identity.first.first = {0, 0, 0};
-  identity.first.second = {1, 0, 0, 0};
+  identity.first.first = Eigen::Vector3d::Zero();
+  identity.first.second = Eigen::Quaterniond::Identity();
   identity.second = Eigen::Matrix6d::Identity();
   ComposePoseQuaternionCovarianceRPY(pq, identity, pq_out);
 
@@ -117,7 +121,7 @@ TEST(PoseCovarianceComposition, HandleZeroPoseROS)
 
 TEST(PoseCovarianceComposition, HandleCompositionPoseQuaternion)
 {
-  PoseQuaternionCovariance pq1, pq2, pq3, p_out, pq_mrpt_out;
+  PoseQuaternionCovariance pq1, pq2, p_out, pq_mrpt_out;
   Eigen::Matrix7d cov_mrpt = generateRandomCovariance(7);
   Eigen::Matrix7d cov_eigen = cov_mrpt;
   permuteCovariance(cov_eigen);
@@ -128,7 +132,6 @@ TEST(PoseCovarianceComposition, HandleCompositionPoseQuaternion)
   pq2.first.first = coord;
   pq2.first.second = quat;
   pq2.second = cov_eigen;
-  // pq2 = pq1;
   ComposePoseQuaternionCovariance(pq1, pq2, p_out);
 
   mrpt::poses::CPose3DQuatPDFGaussian p1, p2, p3;
@@ -203,5 +206,71 @@ TEST(PoseCovarianceComposition, HandleCompositionPoseROS)
   permuteCovariance(pq_mrpt_out.second);
 
   EXPECT_TRUE(isApprox<PoseQuaternionCovarianceRPY>(pq_mrpt_out, pq_out));
+}
+
+TEST(PoseCovarianceComposition, HandleCompositionPoseROSsmallcov)
+{
+  PoseQuaternionCovarianceRPY p1, p2, identity, pq_out, pq_mrpt_out;
+  PoseRPY pr;
+  Eigen::Matrix6d cov_mrpt = generateRandomCovariance(6) * 1e-41;
+  Eigen::Matrix6d cov_eigen = cov_mrpt;
+  permuteCovariance(cov_eigen);
+
+  p1.first.first = coord;
+  p1.first.second = quat;
+  p1.second = cov_eigen;
+  p2.first.first = coord;
+  p2.first.second = quat;
+  p2.second = cov_eigen * 1e26;
+  ComposePoseQuaternionCovarianceRPY(p1, p2, pq_out);
+
+  CPose3DQuat pq1, pq2, pq3;
+  CPose3DPDFGaussian pr1, pr2, pr3;
+  pq1 = {coord.x(), coord.y(), coord.z(), {quat.w(), quat.x(), quat.y(), quat.z()}};
+  pq2 = {coord.x(), coord.y(), coord.z(), {quat.w(), quat.x(), quat.y(), quat.z()}};
+  pq3 = pq1 + pq2;
+  Pose3DQuaternionTo3DRPY(p1.first, pr);
+  EigenToMRPT<PoseRPY, CPose3D>(pr, pr1.mean);
+  pr1.cov = cov_mrpt;
+  pr2.mean = pr1.mean;
+  pr2.cov = cov_mrpt * 1e26;
+  pr3 = pr1 + pr2;
+  MRPTtoEigen<CPose3DPDFGaussian, PoseQuaternionCovarianceRPY>(pr3, pq_mrpt_out);
+  permuteCovariance(pq_mrpt_out.second);
+
+  EXPECT_TRUE(isApprox<PoseQuaternionCovarianceRPY>(pq_mrpt_out, pq_out));
+}
+
+TEST(PoseCovarianceComposition, HandleLoopCompositionPoseQuaternion)
+{
+  PoseQuaternionCovariance pq1, pq2, pq3, p_out, pq_mrpt_out;
+  Eigen::Matrix7d cov_mrpt = generateRandomCovariance(7);
+  Eigen::Matrix7d cov_eigen = cov_mrpt;
+  permuteCovariance(cov_eigen);
+
+  pq1.first.first = coord;
+  pq1.first.second = quat;
+  pq1.second = cov_eigen;
+  pq2.first.first = coord;
+  pq2.first.second = quat;
+  pq2.second = cov_eigen;
+
+  mrpt::poses::CPose3DQuatPDFGaussian p1, p2, p3;
+  p1.mean = {coord.x(), coord.y(), coord.z(), {quat.w(), quat.x(), quat.y(), quat.z()}};
+  p1.cov = cov_mrpt;
+  p2.mean = {coord.x(), coord.y(), coord.z(), {quat.w(), quat.x(), quat.y(), quat.z()}};
+  p2.cov = cov_mrpt;
+
+  for (int i = 0; i < NUM_IT; i++) {
+    ComposePoseQuaternionCovariance(pq1, pq2, p_out);
+    p3 = p1 + p2;
+    MRPTtoEigen<CPose3DQuatPDFGaussian, PoseQuaternionCovariance>(p3, pq_mrpt_out);
+    permuteCovariance(pq_mrpt_out.second);
+    EXPECT_TRUE(isApprox<PoseQuaternionCovariance>(pq_mrpt_out, p_out));
+    pq1 = pq2;
+    pq2 = p_out;
+    p1 = p2;
+    p2 = p3;
+  }
 }
 }  // namespace covariance_geometry
