@@ -12,6 +12,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Eigen3 REQUIRED)
 
+include_directories(include)
+
 add_library(${PROJECT_NAME} SHARED
   src/pose_representation.cpp
   src/covariance_representation.cpp
@@ -29,7 +31,7 @@ target_include_directories(${PROJECT_NAME}
 
 if(BUILD_TESTING)
   find_package(GTest REQUIRED)
-  find_package(mrpt-poses REQUIRED)
+  find_package(mrpt-poses 2.10 REQUIRED)
 
   set(TEST_NAMES
   pose_composition_test
