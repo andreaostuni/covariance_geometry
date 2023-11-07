@@ -71,6 +71,8 @@ void Pose3DQuaternionCovarianceRPYTo3DRPYCovariance(
 {
   // Convert pose
   Pose3DQuaternionTo3DRPY(pose_quaternion_covariance_rpy.first, pose_rpy_covariance.first);
+  // Copy covariance
+  pose_rpy_covariance.second = pose_quaternion_covariance_rpy.second;
 }
 
 void Pose3DQuaternionCovarianceRPYTo3DQuaternionCovariance(
