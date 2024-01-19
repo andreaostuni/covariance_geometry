@@ -5,6 +5,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+add_compile_options(-g)
+
 set(PROJECT_VERSION 0.0.1)
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD 17)
@@ -31,7 +33,7 @@ target_include_directories(${PROJECT_NAME}
 
 if(BUILD_TESTING)
   find_package(GTest REQUIRED)
-  find_package(mrpt-poses 2.10 REQUIRED)
+  find_package(mrpt-poses 2.4.2 REQUIRED)
 
   set(TEST_NAMES
   pose_composition_test

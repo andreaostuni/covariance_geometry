@@ -26,7 +26,7 @@ void covariance3DRPYTo3DQuaternion(
   // Equation 2.8 pag. 14 A tutorial on SE(3) transformation parameterizations and on-manifold optimization
   Eigen::Matrix7_6d jacobian = Eigen::Matrix7_6d::Zero();
   jacobian3DRPYTo3DQuaternion(rpy, jacobian);
-  covariance_quaternion = jacobian * covariance_rpy * jacobian.transpose();
+  covariance_quaternion.noalias() = jacobian * covariance_rpy * jacobian.transpose();
 }
 
 void covariance3DQuaternionTo3DRPY(
@@ -94,36 +94,39 @@ void jacobianQuaternionNormalization(
 void jacobianRPYToQuaternion(const Eigen::Vector3d & rpy, Eigen::Matrix4_3d & jacobian)
 {
   // Equation 2.9b pag. 14 A tutorial on SE(3) transformation parameterizations and on-manifold optimization
-  const double ccc = cos(rpy.x() / 2.0) * cos(rpy.y() / 2.0) * cos(rpy.z() / 2.0);
-  const double ccs = cos(rpy.x() / 2.0) * cos(rpy.y() / 2.0) * sin(rpy.z() / 2.0);
-  const double csc = cos(rpy.x() / 2.0) * sin(rpy.y() / 2.0) * cos(rpy.z() / 2.0);
-  const double css = cos(rpy.x() / 2.0) * sin(rpy.y() / 2.0) * sin(rpy.z() / 2.0);
-  const double scc = sin(rpy.x() / 2.0) * cos(rpy.y() / 2.0) * cos(rpy.z() / 2.0);
-  const double scs = sin(rpy.x() / 2.0) * cos(rpy.y() / 2.0) * sin(rpy.z() / 2.0);
-  const double ssc = sin(rpy.x() / 2.0) * sin(rpy.y() / 2.0) * cos(rpy.z() / 2.0);
-  const double sss = sin(rpy.x() / 2.0) * sin(rpy.y() / 2.0) * sin(rpy.z() / 2.0);
+  const double r2 = 0.5 * rpy.x();
+  const double p2 = 0.5 * rpy.y();
+  const double y2 = 0.5 * rpy.z();   
+  const double ccc = cos(r2) * cos(p2) * cos(y2);
+  const double ccs = cos(r2) * cos(p2) * sin(y2);
+  const double csc = cos(r2) * sin(p2) * cos(y2);
+  const double css = cos(r2) * sin(p2) * sin(y2);
+  const double scc = sin(r2) * cos(p2) * cos(y2);
+  const double scs = sin(r2) * cos(p2) * sin(y2);
+  const double ssc = sin(r2) * sin(p2) * cos(y2);
+  const double sss = sin(r2) * sin(p2) * sin(y2);
 
   // dqx()/d(rpy)
-  jacobian(0, 0) = 0.5 * (ccc + sss);
-  jacobian(0, 1) = 0.5 * -(ssc + ccs);
-  jacobian(0, 2) = 0.5 * -(csc + scs);
+  jacobian(0, 0) =  (ccc + sss);
+  jacobian(0, 1) = -(ssc + ccs);
+  jacobian(0, 2) = -(csc + scs);
 
   // dqy()/d(rpy)
-  jacobian(1, 0) = 0.5 * (ccs - ssc);
-  jacobian(1, 1) = 0.5 * (ccc - sss);
-  jacobian(1, 2) = 0.5 * (scc - css);
+  jacobian(1, 0) = (ccs - ssc);
+  jacobian(1, 1) = (ccc - sss);
+  jacobian(1, 2) = (scc - css);
 
   // dqz()/d(rpy)
-  jacobian(2, 0) = 0.5 * -(csc + scs);
-  jacobian(2, 1) = 0.5 * -(css + scc);
-  jacobian(2, 2) = 0.5 * (ccc + sss);
+  jacobian(2, 0) = -(csc + scs);
+  jacobian(2, 1) = -(css + scc);
+  jacobian(2, 2) =  (ccc + sss);
 
   // dqw()/d(rpy)
-  jacobian(3, 0) = 0.5 * (css - scc);
-  jacobian(3, 1) = 0.5 * (scs - csc);
-  jacobian(3, 2) = 0.5 * (ssc - ccs);
+  jacobian(3, 0) = (css - scc);
+  jacobian(3, 1) = (scs - csc);
+  jacobian(3, 2) = (ssc - ccs);
 
-  jacobian = (1e-6 < jacobian.array().abs()).select(jacobian, 0.0);
+  jacobian *=  0.5;
 }
 
 void jacobianQuaternionToRPY(const Eigen::Quaterniond & quaternion, Eigen::Matrix3_4d & jacobian)
