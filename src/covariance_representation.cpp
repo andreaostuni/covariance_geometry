@@ -36,7 +36,7 @@ void covariance3DQuaternionTo3DRPY(
   // Equation 2.12 pag. 16 A tutorial on SE(3) transformation parameterizations and on-manifold optimization
   Eigen::Matrix6_7d jacobian = Eigen::Matrix6_7d::Zero();
   jacobian3DQuaternionTo3DRPY(quaternion, jacobian);
-  covariance_rpy = jacobian * covariance_quaternion * jacobian.transpose();
+  covariance_rpy.noalias() = jacobian * covariance_quaternion * jacobian.transpose();
 }
 
 void jacobian3DQuaternionTo3DRPY(
@@ -142,7 +142,7 @@ void jacobianQuaternionToRPY(const Eigen::Quaterniond & quaternion, Eigen::Matri
   jacobianQuaternionNormalization(quaternion, jacobian_norm);
 
   // d(rpy)()/d(quaternion) = d(rpy)()/d(quaternion_norm) * d(quaternion_norm)()/d(quaternion)
-  jacobian = jacobian_rpy_norm * jacobian_norm;
+  jacobian.noalias() = jacobian_rpy_norm * jacobian_norm;
 }
 
 void jacobianQuaternionNormalToRPY(

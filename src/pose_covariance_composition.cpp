@@ -106,13 +106,13 @@ void ComposePoseQuaternionCovariance(
 
   // d_fqc_ / d_a = [ d_fqr_ / d_a; 0 f(q1,q2)]
   JacobianPosePoseCompositionA(pose_a, pose_b, j_fqc_a);
-  j_fqc_a.block<4, 4>(3, 3) = jqn_out * j_fqc_a.block<4, 4>(3, 3);
+  j_fqc_a.block<4, 4>(3, 3).applyOnTheLeft(jqn_out);
 
   // d_fqc_ / d_b = [ 0 d_fqr_ / d_b; 0 f(q1,q2)]
   JacobianPosePoseCompositionB(pose_a, j_fqc_b);
-  j_fqc_b.block<4, 4>(3, 3) = jqn_out * j_fqc_b.block<4, 4>(3, 3);
+  j_fqc_b.block<4, 4>(3, 3).applyOnTheLeft(jqn_out);
 
-  cov_out = j_fqc_a * cov_a * j_fqc_a.transpose() + j_fqc_b * cov_b * j_fqc_b.transpose();
+  cov_out.noalias() = j_fqc_a * cov_a * j_fqc_a.transpose() + j_fqc_b * cov_b * j_fqc_b.transpose();
 
   out.first = pose_out;
   out.second = cov_out;
@@ -234,23 +234,23 @@ void JacobianQuaternionPointComposition(
   auto az = point.z();
 
   // Equation 3.9 pag. 24 A tutorial on SE(3) transformation parameterizations and on-manifold optimization
-  jacobian(0, 0) = qy * ay + qz * az;
-  jacobian(0, 1) = -2 * qy * ax + qx * ay + qw * az;
-  jacobian(0, 2) = -2 * qz * ax - qw * ay + qx * az;
-  jacobian(0, 3) = -qz * ay + qy * az;
+  jacobian(0, 0) = 2.0 * (qy * ay + qz * az);
+  jacobian(0, 1) = 2.0 * (-2.0 * qy * ax + qx * ay + qw * az);
+  jacobian(0, 2) = 2.0 * (-2.0 * qz * ax - qw * ay + qx * az);
+  jacobian(0, 3) = 2.0 * (-qz * ay + qy * az);
 
-  jacobian(1, 0) = qy * ax - 2 * qx * ay - qw * az;
-  jacobian(1, 1) = qx * ax + qz * az;
-  jacobian(1, 2) = qw * ax - 2 * qz * ay + qy * az;
-  jacobian(1, 3) = qz * ax - qx * az;
+  jacobian(1, 0) = 2.0 * (qy * ax - 2.0 * qx * ay - qw * az);
+  jacobian(1, 1) = 2.0 * (qx * ax + qz * az);
+  jacobian(1, 2) = 2.0 * (qw * ax - 2.0 * qz * ay + qy * az);
+  jacobian(1, 3) = 2.0 * (qz * ax - qx * az);
 
-  jacobian(2, 0) = qz * ax + qw * ay - 2 * qx * az;
-  jacobian(2, 1) = -qw * ax + qz * ay - 2 * qy * az;
-  jacobian(2, 2) = qx * ax + qy * ay;
-  jacobian(2, 3) = -qy * ax + qx * ay;
+  jacobian(2, 0) = 2.0 * (qz * ax + qw * ay - 2.0 * qx * az);
+  jacobian(2, 1) = 2.0 * (-qw * ax + qz * ay - 2.0 * qy * az);
+  jacobian(2, 2) = 2.0 * (qx * ax + qy * ay);
+  jacobian(2, 3) = 2.0 * (-qy * ax + qx * ay);
 
   Eigen::Matrix4d jqn;
   jacobianQuaternionNormalization(quaternion, jqn);
-  jacobian = 2 * jacobian * jqn;
+  jacobian.applyOnTheRight(jqn);
 }
 }  // namespace covariance_geometry
