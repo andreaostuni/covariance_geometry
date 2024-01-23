@@ -84,39 +84,37 @@ void ComposePoseQuaternionCovariance(
 {
   // Equation 5.7 pag. 31 A tutorial on SE(3) transformation parameterizations and on-manifold optimization
   // cov(a * b) = J_a * cov(a) * J_a^T + J_b * cov(b) * J_b^T
-  auto & cov_a = a.second;
-  auto & cov_b = b.second;
-  auto & cov_out = out.second;
   auto & pose_a = a.first;
   auto & pose_b = b.first;
   auto & pose_out = out.first;
+  auto & cov_a = a.second;
+  auto & cov_b = b.second;
+  auto & cov_out = out.second;
 
   // Pose composition
   ComposePose3DQuaternion(pose_a, pose_b, pose_out);
 
   // Covariance composition
-
-  // derivative of the poses composition
-  Eigen::Matrix7d j_fqc_a = Eigen::Matrix7d::Zero();
-  Eigen::Matrix7d j_fqc_b = Eigen::Matrix7d::Zero();
+  Eigen::Matrix7d j_fqc_a;
+  Eigen::Matrix7d j_fqc_b;
+  Eigen::Matrix4d jqn_out;
 
   // Jacobian of the quaternion normalization function, computed in the output pose quaternion
-  Eigen::Matrix4d jqn_out;
   jacobianQuaternionNormalization(pose_out.second, jqn_out);
 
   // d_fqc_ / d_a = [ d_fqr_ / d_a; 0 f(q1,q2)]
   JacobianPosePoseCompositionA(pose_a, pose_b, j_fqc_a);
   j_fqc_a.block<4, 4>(3, 3).applyOnTheLeft(jqn_out);
+  j_fqc_a.block<4, 3>(3, 0).setZero();
 
-  // d_fqc_ / d_b = [ 0 d_fqr_ / d_b; 0 f(q1,q2)]
+  // d_fqc_ / d_b = [ d_fqr_ / d_b 0; 0 f(q1,q2)]
   JacobianPosePoseCompositionB(pose_a, j_fqc_b);
   j_fqc_b.block<4, 4>(3, 3).applyOnTheLeft(jqn_out);
-
-  // B.triangularView<Upper>() = A * S.selfadjointView<Upper>() * A.transpose();
+  j_fqc_b.block<3, 4>(0, 3).setZero();
+  j_fqc_b.block<4, 3>(3, 0).setZero();
+  
+  // check this: https://eigen.tuxfamily.org/dox/group__TutorialSparse.html
   cov_out.noalias() = j_fqc_a * cov_a * j_fqc_a.transpose() + j_fqc_b * cov_b * j_fqc_b.transpose();
-
-  // out.first = pose_out;
-  // out.second = cov_out;
 }
 
 void JacobianPosePoseCompositionA(
@@ -128,10 +126,7 @@ void JacobianPosePoseCompositionA(
   auto qw_b = pose_b.second.w();
 
   // Equation 5.8 pag. 31 A tutorial on SE(3) transformation parameterizations and on-manifold optimization
-  Eigen::Matrix3_7d j37_temp;
-
-  JacobianPosePointComposition(pose_a, pose_b.first, j37_temp);
-  jacobian.block<3, 7>(0, 0) = j37_temp;
+  JacobianPosePointComposition(pose_a, pose_b.first, jacobian.block<3, 7>(0, 0));
 
   jacobian(3, 3) = qw_b;
   jacobian(3, 4) = qz_b;
@@ -156,17 +151,13 @@ void JacobianPosePoseCompositionA(
 
 void JacobianPosePoseCompositionB(const PoseQuaternion & pose_a, Eigen::Matrix7d & jacobian)
 {
+  // Equation 5.9 pag. 31 A tutorial on SE(3) transformation parameterizations and on-manifold optimization
   auto qx_a = pose_a.second.x();
   auto qy_a = pose_a.second.y();
   auto qz_a = pose_a.second.z();
   auto qw_a = pose_a.second.w();
 
-  // Equation 5.9 pag. 31 A tutorial on SE(3) transformation parameterizations and on-manifold optimization
-
-  Eigen::Matrix3d j33_temp;
-
-  JacobianPosePointComposition(pose_a, j33_temp);
-  jacobian.block<3, 3>(0, 0) = j33_temp;
+  JacobianPosePointComposition(pose_a, jacobian.block<3, 3>(0, 0));
 
   jacobian(3, 3) = qw_a;
   jacobian(3, 4) = -qz_a;
@@ -190,16 +181,14 @@ void JacobianPosePoseCompositionB(const PoseQuaternion & pose_a, Eigen::Matrix7d
 }
 
 void JacobianPosePointComposition(
-  const PoseQuaternion & pose, const Eigen::Vector3d & point, Eigen::Matrix3_7d & jacobian)
+  const PoseQuaternion & pose, const Eigen::Vector3d & point, Eigen::Ref<Eigen::Matrix3_7d> jacobian)
 {
   // Equation 3.8 pag. 24 A tutorial on SE(3) transformation parameterizations and on-manifold optimization
-  Eigen::Matrix3_4d j34_temp;
-  jacobian.block<3, 3>(0, 0) = Eigen::Matrix3d::Identity();
-  JacobianQuaternionPointComposition(pose.second, point, j34_temp);
-  jacobian.block<3, 4>(0, 3) = j34_temp;
+  jacobian.block<3, 3>(0, 0).setIdentity();
+  JacobianQuaternionPointComposition(pose.second, point, jacobian.block<3, 4>(0, 3));
 }
 
-void JacobianPosePointComposition(const PoseQuaternion & pose, Eigen::Matrix3d & jacobian)
+void JacobianPosePointComposition(const PoseQuaternion & pose, Eigen::Ref<Eigen::Matrix3d> jacobian)
 {
   // Equation 3.10 pag. 24 A tutorial on SE(3) transformation parameterizations and on-manifold optimization
   auto qx = pose.second.x();
@@ -218,18 +207,17 @@ void JacobianPosePointComposition(const PoseQuaternion & pose, Eigen::Matrix3d &
   jacobian(2, 0) = qx * qz - qw * qy;
   jacobian(2, 1) = qw * qx + qy * qz;
   jacobian(2, 2) = 0.5 - qx * qx - qy * qy;
-  jacobian = 2 * jacobian;
+  jacobian *= 2.0;
 }
 
 void JacobianQuaternionPointComposition(
   const Eigen::Quaterniond & quaternion, const Eigen::Vector3d & point,
-  Eigen::Matrix3_4d & jacobian)
+  Eigen::Ref<Eigen::Matrix3_4d> jacobian)
 {
   auto qx = quaternion.x();
   auto qy = quaternion.y();
   auto qz = quaternion.z();
   auto qw = quaternion.w();
-
   auto ax = point.x();
   auto ay = point.y();
   auto az = point.z();
