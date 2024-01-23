@@ -13,7 +13,6 @@
 // limitations under the License.
 
 #include "covariance_geometry/covariance_representation.hpp"
-// #include "covariance_geometry/pose_representation.hpp"
 
 using PoseQuaternion = std::pair<Eigen::Vector3d, Eigen::Quaterniond>;
 using PoseRPY = std::pair<Eigen::Vector3d, Eigen::Vector3d>;
@@ -43,10 +42,8 @@ void jacobian3DQuaternionTo3DRPY(
   const Eigen::Quaterniond & quaternion, Eigen::Matrix6_7d & jacobian)
 {
   // Equation 2.13 pag. 16 A tutorial on SE(3) transformation parameterizations and on-manifold optimization
-  Eigen::Matrix3_4d j34_tmp;
-  jacobian.block<3, 3>(0, 0) = Eigen::Matrix3d::Identity();
-  jacobianQuaternionToRPY(quaternion, j34_tmp);
-  jacobian.block<3, 4>(3, 3) = j34_tmp;
+  jacobian.block<3, 3>(0, 0).diagonal() = Eigen::Vector3d::Ones();
+  jacobianQuaternionToRPY(quaternion, jacobian.block<3, 4>(3, 3));
 }
 
 void jacobian3DRPYTo3DQuaternion(const Eigen::Vector3d & rpy, Eigen::Matrix7_6d & jacobian)
@@ -124,10 +121,10 @@ void jacobianRPYToQuaternion(const Eigen::Vector3d & rpy, Eigen::Ref<Eigen::Matr
   jacobian(3, 1) = (scs - csc);
   jacobian(3, 2) = (ssc - ccs);
 
-  jacobian *=  0.5;
+  jacobian *= 0.5;
 }
 
-void jacobianQuaternionToRPY(const Eigen::Quaterniond & quaternion, Eigen::Matrix3_4d & jacobian)
+void jacobianQuaternionToRPY(const Eigen::Quaterniond & quaternion, Eigen::Ref<Eigen::Matrix3_4d> jacobian)
 {
   // Equation 2.14 pag. 16 A tutorial on SE(3) transformation parameterizations and on-manifold optimization
   // d(rpy)()/d(quaternion) = d(rpy)()/d(quaternion_norm) * d(quaternion_norm)()/d(quaternion)
@@ -155,60 +152,43 @@ void jacobianQuaternionNormalToRPY(
   if (discr > 0.49999) {
     // pitch = 90 deg
     jacobian = Eigen::Matrix3_4d::Zero();
-    jacobian(2, 0) = -2 / (qw * ((qx * qx / qw * qw) + 1));
-    jacobian(2, 3) = (2 * qx) / (qw * qw * ((qx * qx / qw * qw) + 1));
+    jacobian(2, 0) = -2.0 / (qw * ((qx * qx / qw * qw) + 1.0));
+    jacobian(2, 3) = (2.0 * qx) / (qw * qw * ((qx * qx / qw * qw) + 1.0));
     return;
   } else if (discr < -0.49999) {
     // pitch = -90 deg
     jacobian = Eigen::Matrix3_4d::Zero();
-    jacobian(2, 0) = 2 / (qw * ((qx * qx / qw * qw) + 1));
-    jacobian(2, 3) = (-2 * qx) / (qw * qw * ((qx * qx / qw * qw) + 1));
+    jacobian(2, 0) = 2.0 / (qw * ((qx * qx / qw * qw) + 1.0));
+    jacobian(2, 3) = (-2.0 * qx) / (qw * qw * ((qx * qx / qw * qw) + 1.0));
     return;
   } else {
     // Non-degenerate case:
-    jacobian(0, 0) =
-      -((2 * qw) / (2 * qx * qx + 2 * qy * qy - 1) -
-      (4 * qx * (2 * qw * qx + 2 * qy * qz)) / std::pow((2 * qx * qx + 2 * qy * qy - 1), 2)) /
-      (std::pow((2 * qw * qx + 2 * qy * qz), 2) / std::pow((2 * qx * qx + 2 * qy * qy - 1), 2) + 1);
-    jacobian(0, 1) =
-      -((2 * qz) / (2 * qx * qx + 2 * qy * qy - 1) -
-      (4 * qy * (2 * qw * qx + 2 * qy * qz)) / std::pow((2 * qx * qx + 2 * qy * qy - 1), 2)) /
-      (std::pow((2 * qw * qx + 2 * qy * qz), 2) / std::pow((2 * qx * qx + 2 * qy * qy - 1), 2) + 1);
-    jacobian(0, 2) =
-      -(2 * qy) /
-      ((std::pow((2 * qw * qx + 2 * qy * qz), 2) / std::pow((2 * qx * qx + 2 * qy * qy - 1), 2) +
-      1) *
-      (2 * qx * qx + 2 * qy * qy - 1));
-    jacobian(0, 3) =
-      -(2 * qx) /
-      ((std::pow((2 * qw * qx + 2 * qy * qz), 2) / std::pow((2 * qx * qx + 2 * qy * qy - 1), 2) +
-      1) *
-      (2 * qx * qx + 2 * qy * qy - 1));
+    const double c0 = (2.0 * qx * qx + 2.0 * qy * qy - 1.0);
+    const double c1 = (2.0 * qw * qx + 2.0 * qy * qz);
+    const double c2 = (2.0 * qw * qz + 2.0 * qx * qy);
+    const double c3 = (2.0 * qy * qy + 2.0 * qz * qz - 1.0);
+    const double c0_2 = c0 * c0;
+    const double c1_2 = c1 * c1;
+    const double c2_2 = c2 * c2;
+    const double c3_2 = c3 * c3;
+    const double c4_i = 1.0 / std::sqrt(1.0 - std::pow((2.0 * qw * qy - 2.0 * qx * qz), 2));
+    const double c5 = (c1_2 / c0_2 + 1.0);
+    const double c6 = (c2_2 / c3_2 + 1.0);
 
-    jacobian(1, 0) = -(2 * qz) / std::sqrt(1 - std::pow((2 * qw * qy - 2 * qx * qz), 2));
-    jacobian(1, 1) = (2 * qw) / std::sqrt(1 - std::pow((2 * qw * qy - 2 * qx * qz), 2));
-    jacobian(1, 2) = -(2 * qx) / std::sqrt(1 - std::pow((2 * qw * qy - 2 * qx * qz), 2));
-    jacobian(1, 3) = (2 * qy) / std::sqrt(1 - std::pow((2 * qw * qy - 2 * qx * qz), 2));
+    jacobian(0, 0) = -(2.0 * qw / c0 - (4.0 * qx * c1) / c0_2) / c5;
+    jacobian(0, 1) = -(2.0 * qz / c0 - (4.0 * qy * c1) / c0_2) / c5;
+    jacobian(0, 2) = -(2.0 * qy) / (c5 * c0);
+    jacobian(0, 3) = -(2.0 * qx) / (c5 * c0);
 
-    jacobian(2, 0) =
-      -(2 * qy) /
-      ((std::pow((2 * qw * qz + 2 * qx * qy), 2) / std::pow((2 * qy * qy + 2 * qz * qz - 1), 2) +
-      1) *
-      (2 * qy * qy + 2 * qz * qz - 1));
-    jacobian(2, 1) =
-      -((2 * qx) / (2 * qy * qy + 2 * qz * qz - 1) -
-      (4 * qy * (2 * qw * qz + 2 * qx * qy)) / std::pow((2 * qy * qy + 2 * qz * qz - 1), 2)) /
-      (std::pow((2 * qw * qz + 2 * qx * qy), 2) / std::pow((2 * qy * qy + 2 * qz * qz - 1), 2) + 1);
-    jacobian(2, 2) =
-      -((2 * qw) / (2 * qy * qy + 2 * qz * qz - 1) -
-      (4 * qz * (2 * qw * qz + 2 * qx * qy)) / std::pow((2 * qy * qy + 2 * qz * qz - 1), 2)) /
-      (std::pow((2 * qw * qz + 2 * qx * qy), 2) / std::pow((2 * qy * qy + 2 * qz * qz - 1), 2) + 1);
-    jacobian(2, 3) =
-      -(2 * qz) /
-      ((std::pow((2 * qw * qz + 2 * qx * qy), 2) / std::pow((2 * qy * qy + 2 * qz * qz - 1), 2) +
-      1) *
-      (2 * qy * qy + 2 * qz * qz - 1));
+    jacobian(1, 0) = -(2.0 * qz) * c4_i;
+    jacobian(1, 1) =  (2.0 * qw) * c4_i;
+    jacobian(1, 2) = -(2.0 * qx) * c4_i;
+    jacobian(1, 3) =  (2.0 * qy) * c4_i;
 
+    jacobian(2, 0) = -(2.0 * qy) / (c6 * c3);
+    jacobian(2, 1) = -((2.0 * qx) / c3 - (4.0 * qy * c2) / c3_2) / c6;
+    jacobian(2, 2) = -((2.0 * qw) / c3 - (4.0 * qz * c2) / c3_2) / c6;
+    jacobian(2, 3) = -(2.0 * qz) / (c6 * c3);
     return;
   }
 }
