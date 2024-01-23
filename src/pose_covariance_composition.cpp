@@ -84,12 +84,12 @@ void ComposePoseQuaternionCovariance(
 {
   // Equation 5.7 pag. 31 A tutorial on SE(3) transformation parameterizations and on-manifold optimization
   // cov(a * b) = J_a * cov(a) * J_a^T + J_b * cov(b) * J_b^T
-  auto cov_a = a.second;
-  auto cov_b = b.second;
-  auto cov_out = out.second;
-  auto pose_a = a.first;
-  auto pose_b = b.first;
-  auto pose_out = out.first;
+  auto & cov_a = a.second;
+  auto & cov_b = b.second;
+  auto & cov_out = out.second;
+  auto & pose_a = a.first;
+  auto & pose_b = b.first;
+  auto & pose_out = out.first;
 
   // Pose composition
   ComposePose3DQuaternion(pose_a, pose_b, pose_out);
@@ -112,10 +112,11 @@ void ComposePoseQuaternionCovariance(
   JacobianPosePoseCompositionB(pose_a, j_fqc_b);
   j_fqc_b.block<4, 4>(3, 3).applyOnTheLeft(jqn_out);
 
+  // B.triangularView<Upper>() = A * S.selfadjointView<Upper>() * A.transpose();
   cov_out.noalias() = j_fqc_a * cov_a * j_fqc_a.transpose() + j_fqc_b * cov_b * j_fqc_b.transpose();
 
-  out.first = pose_out;
-  out.second = cov_out;
+  // out.first = pose_out;
+  // out.second = cov_out;
 }
 
 void JacobianPosePoseCompositionA(

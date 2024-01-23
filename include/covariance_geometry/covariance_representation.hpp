@@ -73,7 +73,7 @@ void jacobianQuaternionToRPY(const Eigen::Quaterniond & quaternion, Eigen::Matri
   / @brief jacobian of the transformation from RPY to quaternion
   */
 
-void jacobianRPYToQuaternion(const Eigen::Vector3d & rpy, Eigen::Matrix4_3d & jacobian);
+void jacobianRPYToQuaternion(const Eigen::Vector3d & rpy, Eigen::Ref<Eigen::Matrix4_3d> jacobian);
 
 /*
   / @brief jacobian of the transformation from normalized quaternion to RPY

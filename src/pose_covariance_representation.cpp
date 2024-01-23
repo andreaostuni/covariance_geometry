@@ -115,6 +115,7 @@ Eigen::Matrix7d inverseCovarianceQuaternion(
   const PoseQuaternion & pose)
 {
   // Equation 6.3 pag. 34 A tutorial on SE(3) transformation parameterizations and on-manifold optimization
+  Eigen::Matrix7d cov_inv;
   Eigen::Matrix7d j_qi = Eigen::Matrix7d::Zero();
 
   // Equation 4.4 pag. 27 A tutorial on SE(3) transformation parameterizations and on-manifold optimization
@@ -127,49 +128,44 @@ Eigen::Matrix7d inverseCovarianceQuaternion(
   double qz = pose.second.z();
   double qw = pose.second.w();
 
-  Eigen::Matrix<double, 3, 7> j_qi_top = Eigen::Matrix<double, 3, 7>::Zero();
-  Eigen::Matrix3_4d j_qi_top_right = Eigen::Matrix3_4d::Zero();
-  Eigen::Matrix4d j44 = Eigen::Matrix4d::Zero();
+  Eigen::Matrix<double, 3, 7> j_qi_top;
+  Eigen::Matrix<double, 3, 4> j_qi_top_right;
+  Eigen::Matrix4d j44;
 
-  j_qi_top(0, 0) = 2 * (qy * qy + qz * qz) - 1;
-  j_qi_top(0, 1) = -2 * (qw * qz + qx * qy);
-  j_qi_top(0, 2) = 2 * (qw * qy - qx * qz);
+  j_qi_top(0, 0) =  2.0 * (qy * qy + qz * qz) - 1.0;
+  j_qi_top(0, 1) = -2.0 * (qw * qz + qx * qy);
+  j_qi_top(0, 2) =  2.0 * (qw * qy - qx * qz);
 
-  j_qi_top(1, 0) = 2 * (qw * qz - qx * qy);
-  j_qi_top(1, 1) = 2 * (qx * qx + qz * qz) - 1;
-  j_qi_top(1, 2) = -2 * (qw * qx + qy * qz);
+  j_qi_top(1, 0) =  2.0 * (qw * qz - qx * qy);
+  j_qi_top(1, 1) =  2.0 * (qx * qx + qz * qz) - 1.0;
+  j_qi_top(1, 2) = -2.0 * (qw * qx + qy * qz);
 
-  j_qi_top(2, 0) = -2 * (qw * qy + qx * qz);
-  j_qi_top(2, 1) = 2 * (qw * qx - qy * qz);
-  j_qi_top(2, 2) = 2 * (qx * qx + qy * qy) - 1;
+  j_qi_top(2, 0) = -2.0 * (qw * qy + qx * qz);
+  j_qi_top(2, 1) =  2.0 * (qw * qx - qy * qz);
+  j_qi_top(2, 2) =  2.0 * (qx * qx + qy * qy) - 1.0;
 
-  j_qi_top_right(0, 0) = qy * dy + qz * dz;
-  j_qi_top_right(0, 1) = qx * dy - 2 * qy * dx - qw * dz;
-  j_qi_top_right(0, 2) = qx * dz + qw * dy - 2 * qz * dx;
-  j_qi_top_right(0, 3) = -qy * dz + qz * dy;
+  j_qi_top(0, 3) =  qy * dy + qz * dz;
+  j_qi_top(0, 4) =  qx * dy - 2.0 * qy * dx - qw * dz;
+  j_qi_top(0, 5) =  qx * dz + qw * dy - 2.0 * qz * dx;
+  j_qi_top(0, 6) = -qy * dz + qz * dy;
 
-  j_qi_top_right(1, 0) = qy * dx - 2 * qx * dy + qw * dz;
-  j_qi_top_right(1, 1) = qx * dx + qz * dz;
-  j_qi_top_right(1, 2) = -qw * dx - 2 * qz * dy + qy * dz;
-  j_qi_top_right(1, 3) = qx * dz - qz * dx;
+  j_qi_top(1, 3) =  qy * dx - 2.0 * qx * dy + qw * dz;
+  j_qi_top(1, 4) =  qx * dx + qz * dz;
+  j_qi_top(1, 5) = -qw * dx - 2.0 * qz * dy + qy * dz;
+  j_qi_top(1, 6) =  qx * dz - qz * dx;
 
-  j_qi_top_right(2, 0) = qz * dx - qw * dy - 2 * qx * dz;
-  j_qi_top_right(2, 1) = qz * dy + qw * dx - 2 * qy * dz;
-  j_qi_top_right(2, 2) = qx * dx + qy * dy;
-  j_qi_top_right(2, 3) = qy * dx - qx * dy;
+  j_qi_top(2, 3) =  qz * dx - qw * dy - 2.0 * qx * dz;
+  j_qi_top(2, 4) =  qz * dy + qw * dx - 2.0 * qy * dz;
+  j_qi_top(2, 5) =  qx * dx + qy * dy;
+  j_qi_top(2, 6) =  qy * dx - qx * dy;
 
   jacobianQuaternionNormalization(pose.second, j44);
-  j_qi_top_right = 2 * j_qi_top_right * j44;
-  j_qi_top.block<3, 4>(0, 3) = j_qi_top_right;
+  j_qi_top.block<3, 4>(0, 3) *= 2 * j44;
   j_qi.block<3, 7>(0, 0) = j_qi_top;
 
   // j_qi bottom right 4x4 block
-  Eigen::Matrix4d D = Eigen::Matrix4d::Zero();
-  D(0, 0) = -1;
-  D(1, 1) = -1;
-  D(2, 2) = -1;
-  D(3, 3) = 1;
-  j_qi.block<4, 4>(3, 3) = D * j44;
+  Eigen::DiagonalMatrix<double, 4> D(-1.0, -1.0, -1.0, 1.0);
+  j_qi.block<4, 4>(3, 3) += D * j44;
   return j_qi * covariance_quaternion * j_qi.transpose();
 }
 

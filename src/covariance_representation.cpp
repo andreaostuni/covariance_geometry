@@ -52,46 +52,44 @@ void jacobian3DQuaternionTo3DRPY(
 void jacobian3DRPYTo3DQuaternion(const Eigen::Vector3d & rpy, Eigen::Matrix7_6d & jacobian)
 {
   // Equation 2.9a pag. 14 A tutorial on SE(3) transformation parameterizations and on-manifold optimization
-  Eigen::Matrix4_3d j43_tmp;
-  jacobian.block<3, 3>(0, 0) = Eigen::Matrix3d::Identity();
-  jacobianRPYToQuaternion(rpy, j43_tmp);
-  jacobian.block<4, 3>(3, 3) = j43_tmp;
+  jacobian.block<3, 3>(0, 0).diagonal() = Eigen::Vector3d::Ones();
+  jacobianRPYToQuaternion(rpy, jacobian.block<4, 3>(3, 3));
 }
 
 void jacobianQuaternionNormalization(
   const Eigen::Quaterniond & quaternion, Eigen::Matrix4d & jacobian)
 {
   // Equation 1.7 pag. 11 A tutorial on SE(3) transformation parameterizations and on-manifold optimization
-  // Eigen::Quaterniond is quaternion in the form (x,y,z,w)
-  jacobian = Eigen::Matrix4d::Zero();
-  jacobian(0, 0) = quaternion.w() * quaternion.w() + quaternion.y() * quaternion.y() +
-    quaternion.z() * quaternion.z();
-  jacobian(1, 1) = quaternion.w() * quaternion.w() + quaternion.x() * quaternion.x() +
-    quaternion.z() * quaternion.z();
-  jacobian(2, 2) = quaternion.w() * quaternion.w() + quaternion.x() * quaternion.x() +
-    quaternion.y() * quaternion.y();
-  jacobian(3, 3) = quaternion.x() * quaternion.x() + quaternion.y() * quaternion.y() +
-    quaternion.z() * quaternion.z();
-  jacobian(0, 1) = -quaternion.x() * quaternion.y();
-  jacobian(0, 2) = -quaternion.x() * quaternion.z();
-  jacobian(0, 3) = -quaternion.x() * quaternion.w();
+  auto qx = quaternion.x();
+  auto qy = quaternion.y();
+  auto qz = quaternion.z();
+  auto qw = quaternion.w();
 
-  jacobian(1, 0) = -quaternion.x() * quaternion.y();
-  jacobian(1, 2) = -quaternion.y() * quaternion.z();
-  jacobian(1, 3) = -quaternion.y() * quaternion.w();
+  jacobian(0, 0) = qw * qw + qy * qy + qz * qz;
+  jacobian(1, 1) = qw * qw + qx * qx + qz * qz;
+  jacobian(2, 2) = qw * qw + qx * qx + qy * qy;
+  jacobian(3, 3) = qx * qx + qy * qy + qz * qz;
+  
+  jacobian(0, 1) = -qx * qy;
+  jacobian(0, 2) = -qx * qz;
+  jacobian(0, 3) = -qx * qw;
+  
+  jacobian(1, 0) = -qx * qy;
+  jacobian(1, 2) = -qy * qz;
+  jacobian(1, 3) = -qy * qw;
 
-  jacobian(2, 0) = -quaternion.x() * quaternion.z();
-  jacobian(2, 1) = -quaternion.y() * quaternion.z();
-  jacobian(2, 3) = -quaternion.z() * quaternion.w();
+  jacobian(2, 0) = -qx * qz;
+  jacobian(2, 1) = -qy * qz;
+  jacobian(2, 3) = -qz * qw;
 
-  jacobian(3, 0) = -quaternion.x() * quaternion.w();
-  jacobian(3, 1) = -quaternion.y() * quaternion.w();
-  jacobian(3, 2) = -quaternion.z() * quaternion.w();
+  jacobian(3, 0) = -qx * qw;
+  jacobian(3, 1) = -qy * qw;
+  jacobian(3, 2) = -qz * qw;
 
-  jacobian = jacobian / std::pow(quaternion.norm(), 3);
+  jacobian /= std::pow(quaternion.norm(), 3);
 }
 
-void jacobianRPYToQuaternion(const Eigen::Vector3d & rpy, Eigen::Matrix4_3d & jacobian)
+void jacobianRPYToQuaternion(const Eigen::Vector3d & rpy, Eigen::Ref<Eigen::Matrix4_3d> jacobian)
 {
   // Equation 2.9b pag. 14 A tutorial on SE(3) transformation parameterizations and on-manifold optimization
   const double r2 = 0.5 * rpy.x();
@@ -134,11 +132,11 @@ void jacobianQuaternionToRPY(const Eigen::Quaterniond & quaternion, Eigen::Matri
   // Equation 2.14 pag. 16 A tutorial on SE(3) transformation parameterizations and on-manifold optimization
   // d(rpy)()/d(quaternion) = d(rpy)()/d(quaternion_norm) * d(quaternion_norm)()/d(quaternion)
   // d(rpy)()/d(quaternion_norm) = jacobian_rpy_norm
-  Eigen::Matrix3_4d jacobian_rpy_norm = Eigen::Matrix3_4d::Zero();
+  Eigen::Matrix3_4d jacobian_rpy_norm;
   jacobianQuaternionNormalToRPY(quaternion.normalized(), jacobian_rpy_norm);
 
   // d(quaternion_norm)()/d(quaternion) = jacobian_norm
-  Eigen::Matrix4d jacobian_norm = Eigen::Matrix4d::Zero();
+  Eigen::Matrix4d jacobian_norm;
   jacobianQuaternionNormalization(quaternion, jacobian_norm);
 
   // d(rpy)()/d(quaternion) = d(rpy)()/d(quaternion_norm) * d(quaternion_norm)()/d(quaternion)
@@ -154,14 +152,15 @@ void jacobianQuaternionNormalToRPY(
   auto qw = quaternion.w();
   const auto discr = qw * qy - qx * qz;
 
-  jacobian = Eigen::Matrix3_4d::Zero();
   if (discr > 0.49999) {
     // pitch = 90 deg
+    jacobian = Eigen::Matrix3_4d::Zero();
     jacobian(2, 0) = -2 / (qw * ((qx * qx / qw * qw) + 1));
     jacobian(2, 3) = (2 * qx) / (qw * qw * ((qx * qx / qw * qw) + 1));
     return;
   } else if (discr < -0.49999) {
     // pitch = -90 deg
+    jacobian = Eigen::Matrix3_4d::Zero();
     jacobian(2, 0) = 2 / (qw * ((qx * qx / qw * qw) + 1));
     jacobian(2, 3) = (-2 * qx) / (qw * qw * ((qx * qx / qw * qw) + 1));
     return;
