@@ -37,14 +37,13 @@ void Pose3DQuaternionTo3DRPY(const PoseQuaternion & pose_in, PoseRPY & pose_out)
 
 inline void RPYToQuaternion(const Eigen::Vector3d & rpy, Eigen::Quaterniond & quaternion)
 {
-  quaternion.w() = cos(rpy.x() / 2) * cos(rpy.y() / 2) * cos(rpy.z() / 2) +
-    sin(rpy.x() / 2) * sin(rpy.y() / 2) * sin(rpy.z() / 2);
-  quaternion.x() = sin(rpy.x() / 2) * cos(rpy.y() / 2) * cos(rpy.z() / 2) -
-    cos(rpy.x() / 2) * sin(rpy.y() / 2) * sin(rpy.z() / 2);
-  quaternion.y() = cos(rpy.x() / 2) * sin(rpy.y() / 2) * cos(rpy.z() / 2) +
-    sin(rpy.x() / 2) * cos(rpy.y() / 2) * sin(rpy.z() / 2);
-  quaternion.z() = cos(rpy.x() / 2) * cos(rpy.y() / 2) * sin(rpy.z() / 2) -
-    sin(rpy.x() / 2) * sin(rpy.y() / 2) * cos(rpy.z() / 2);
+  const double half_roll = 0.5 * rpy.x();
+  const double half_pitch = 0.5 * rpy.y();
+  const double half_yaw = 0.5 * rpy.z(); 
+  quaternion.w() = cos(half_roll) * cos(half_pitch) * cos(half_yaw) + sin(half_roll) * sin(half_pitch) * sin(half_yaw);
+  quaternion.x() = sin(half_roll) * cos(half_pitch) * cos(half_yaw) - cos(half_roll) * sin(half_pitch) * sin(half_yaw);
+  quaternion.y() = cos(half_roll) * sin(half_pitch) * cos(half_yaw) + sin(half_roll) * cos(half_pitch) * sin(half_yaw);
+  quaternion.z() = cos(half_roll) * cos(half_pitch) * sin(half_yaw) - sin(half_roll) * sin(half_pitch) * cos(half_yaw);
   quaternion.normalize();
 }
 
@@ -63,18 +62,18 @@ inline void QuaternionToRPY(const Eigen::Quaterniond & quaternion, Eigen::Vector
   if (discr > 0.49999) {
     // pitch = 90 deg
     pitch = 0.5 * M_PI;
-    yaw = -2 * std::atan2(qx, qw);
+    yaw = -2.0 * std::atan2(qx, qw);
     roll = 0.0;
   } else if (discr < -0.49999) {
     // pitch =-90 deg
     pitch = -0.5 * M_PI;
-    yaw = 2 * std::atan2(qx, qw);
+    yaw = 2.0 * std::atan2(qx, qw);
     roll = 0.0;
   } else {
     // Non-degenerate case:
-    yaw = std::atan2(2 * (qw * qz + qx * qy), 1 - 2 * (qy * qy + qz * qz));
-    pitch = std::asin(2 * discr);
-    roll = std::atan2(2 * (qw * qx + qy * qz), 1 - 2 * (qx * qx + qy * qy));
+    yaw = std::atan2(2.0 * (qw * qz + qx * qy), 1.0 - 2.0 * (qy * qy + qz * qz));
+    pitch = std::asin(2.0 * discr);
+    roll = std::atan2(2.0 * (qw * qx + qy * qz), 1.0 - 2.0 * (qx * qx + qy * qy));
   }
 }
 }  // namespace covariance_geometry
