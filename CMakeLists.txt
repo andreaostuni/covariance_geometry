@@ -31,7 +31,7 @@ target_include_directories(${PROJECT_NAME}
 
 if(BUILD_TESTING)
   find_package(GTest REQUIRED)
-  find_package(mrpt-poses 2.10 REQUIRED)
+  find_package(mrpt-poses 2.4.2 REQUIRED)
 
   set(TEST_NAMES
   pose_composition_test

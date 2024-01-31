@@ -258,7 +258,7 @@ TEST(PoseCovarianceInversion, InvertPoseQuaternionCovariance)
   pq.first.first = coord;
   pq.first.second = quat;
   pq.second = cov_eigen;
-  pq_inv = inversePose3DQuaternionCovarianceQuaternion(pq);
+  pq_inv = InversePose3DQuaternionCovarianceQuaternion(pq);
 
   CPose3DQuatPDFGaussian mrpt_pose_q, mrpt_pose_q_inv;
   mrpt_pose_q.mean =
@@ -281,7 +281,7 @@ TEST(PoseCovarianceInversion, InvertPoseRPYCovariance)
   pr.first.first = coord;
   pr.first.second = rpy;
   pr.second = cov_eigen;
-  pr_inv = inversePose3DRPYCovarianceRPY(pr);
+  pr_inv = InversePose3DRPYCovarianceRPY(pr);
   std::cout << "pr_inv: \n" << pr_inv.first.first << std::endl;
 
   CPose3DPDFGaussian mrpt_pose_r, mrpt_pose_r_inv;
@@ -304,7 +304,7 @@ TEST(PoseCovarianceInversion, InvertPoseQuaternionCovarianceRPY)
   pq.first.first = coord;
   pq.first.second = quat;
   pq.second = cov_eigen;
-  pq_inv = inversePose3DQuaternionCovarianceRPY(pq);
+  pq_inv = InversePose3DQuaternionCovarianceRPY(pq);
 
   CPose3DQuat mrpt_pose_q =
   {coord.x(), coord.y(), coord.z(), {quat.w(), quat.x(), quat.y(), quat.z()}};

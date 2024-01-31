@@ -84,7 +84,7 @@ PoseRPY InversePose(const PoseRPY & pose_in);
   / @brief Inverse of a covariance matrix in quaternion representation
   */
 
-Eigen::Matrix7d inverseCovarianceQuaternion(
+Eigen::Matrix7d InverseCovarianceQuaternion(
   const Eigen::Matrix7d & covariance_quaternion,
   const PoseQuaternion & pose);
 
@@ -93,23 +93,23 @@ Eigen::Matrix7d inverseCovarianceQuaternion(
   This accepts pose in quaternion representation, since it is assumed to be used together with inversePose
   */
 
-Eigen::Matrix6d inverseCovarianceRPY(const Eigen::Matrix6d & covariance_rpy, const PoseRPY & pose);
+Eigen::Matrix6d InverseCovarianceRPY(const Eigen::Matrix6d & covariance_rpy, const PoseRPY & pose);
 
 /*
   / @brief Inverse of a pose with covariance in quaternion representation
  */
-PoseQuaternionCovariance inversePose3DQuaternionCovarianceQuaternion(
+PoseQuaternionCovariance InversePose3DQuaternionCovarianceQuaternion(
   const PoseQuaternionCovariance & pose_quaternion_covariance);
 
 /*
   / @brief Inverse of a pose with covariance in RPY representation
  */
-PoseRPYCovariance inversePose3DRPYCovarianceRPY(const PoseRPYCovariance & pose_rpy_covariance);
+PoseRPYCovariance InversePose3DRPYCovarianceRPY(const PoseRPYCovariance & pose_rpy_covariance);
 
 /*
   / @brief Inverse of a pose in quaternion with covariance in RPY representation (ROS convention)
  */
-PoseQuaternionCovarianceRPY inversePose3DQuaternionCovarianceRPY(
+PoseQuaternionCovarianceRPY InversePose3DQuaternionCovarianceRPY(
   const PoseQuaternionCovarianceRPY & pose_quaternion_covariance_rpy);
 
 }  // namespace covariance_geometry
