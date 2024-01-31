@@ -66,11 +66,11 @@ void jacobianQuaternionNormalization(
   jacobian(1, 1) = qw * qw + qx * qx + qz * qz;
   jacobian(2, 2) = qw * qw + qx * qx + qy * qy;
   jacobian(3, 3) = qx * qx + qy * qy + qz * qz;
-  
+
   jacobian(0, 1) = -qx * qy;
   jacobian(0, 2) = -qx * qz;
   jacobian(0, 3) = -qx * qw;
-  
+
   jacobian(1, 0) = -qx * qy;
   jacobian(1, 2) = -qy * qz;
   jacobian(1, 3) = -qy * qw;
@@ -91,7 +91,7 @@ void jacobianRPYToQuaternion(const Eigen::Vector3d & rpy, Eigen::Ref<Eigen::Matr
   // Equation 2.9b pag. 14 A tutorial on SE(3) transformation parameterizations and on-manifold optimization
   const double r2 = 0.5 * rpy.x();
   const double p2 = 0.5 * rpy.y();
-  const double y2 = 0.5 * rpy.z();   
+  const double y2 = 0.5 * rpy.z();
   const double ccc = cos(r2) * cos(p2) * cos(y2);
   const double ccs = cos(r2) * cos(p2) * sin(y2);
   const double csc = cos(r2) * sin(p2) * cos(y2);
@@ -102,7 +102,7 @@ void jacobianRPYToQuaternion(const Eigen::Vector3d & rpy, Eigen::Ref<Eigen::Matr
   const double sss = sin(r2) * sin(p2) * sin(y2);
 
   // dqx()/d(rpy)
-  jacobian(0, 0) =  (ccc + sss);
+  jacobian(0, 0) = (ccc + sss);
   jacobian(0, 1) = -(ssc + ccs);
   jacobian(0, 2) = -(csc + scs);
 
@@ -114,7 +114,7 @@ void jacobianRPYToQuaternion(const Eigen::Vector3d & rpy, Eigen::Ref<Eigen::Matr
   // dqz()/d(rpy)
   jacobian(2, 0) = -(csc + scs);
   jacobian(2, 1) = -(css + scc);
-  jacobian(2, 2) =  (ccc + sss);
+  jacobian(2, 2) = (ccc + sss);
 
   // dqw()/d(rpy)
   jacobian(3, 0) = (css - scc);
@@ -124,7 +124,9 @@ void jacobianRPYToQuaternion(const Eigen::Vector3d & rpy, Eigen::Ref<Eigen::Matr
   jacobian *= 0.5;
 }
 
-void jacobianQuaternionToRPY(const Eigen::Quaterniond & quaternion, Eigen::Ref<Eigen::Matrix3_4d> jacobian)
+void jacobianQuaternionToRPY(
+  const Eigen::Quaterniond & quaternion,
+  Eigen::Ref<Eigen::Matrix3_4d> jacobian)
 {
   // Equation 2.14 pag. 16 A tutorial on SE(3) transformation parameterizations and on-manifold optimization
   // d(rpy)()/d(quaternion) = d(rpy)()/d(quaternion_norm) * d(quaternion_norm)()/d(quaternion)
@@ -181,9 +183,9 @@ void jacobianQuaternionNormalToRPY(
     jacobian(0, 3) = -(2.0 * qx) / (c5 * c0);
 
     jacobian(1, 0) = -(2.0 * qz) * c4_i;
-    jacobian(1, 1) =  (2.0 * qw) * c4_i;
+    jacobian(1, 1) = (2.0 * qw) * c4_i;
     jacobian(1, 2) = -(2.0 * qx) * c4_i;
-    jacobian(1, 3) =  (2.0 * qy) * c4_i;
+    jacobian(1, 3) = (2.0 * qy) * c4_i;
 
     jacobian(2, 0) = -(2.0 * qy) / (c6 * c3);
     jacobian(2, 1) = -((2.0 * qx) / c3 - (4.0 * qy * c2) / c3_2) / c6;

@@ -39,11 +39,15 @@ inline void RPYToQuaternion(const Eigen::Vector3d & rpy, Eigen::Quaterniond & qu
 {
   const double half_roll = 0.5 * rpy.x();
   const double half_pitch = 0.5 * rpy.y();
-  const double half_yaw = 0.5 * rpy.z(); 
-  quaternion.w() = cos(half_roll) * cos(half_pitch) * cos(half_yaw) + sin(half_roll) * sin(half_pitch) * sin(half_yaw);
-  quaternion.x() = sin(half_roll) * cos(half_pitch) * cos(half_yaw) - cos(half_roll) * sin(half_pitch) * sin(half_yaw);
-  quaternion.y() = cos(half_roll) * sin(half_pitch) * cos(half_yaw) + sin(half_roll) * cos(half_pitch) * sin(half_yaw);
-  quaternion.z() = cos(half_roll) * cos(half_pitch) * sin(half_yaw) - sin(half_roll) * sin(half_pitch) * cos(half_yaw);
+  const double half_yaw = 0.5 * rpy.z();
+  quaternion.w() = cos(half_roll) * cos(half_pitch) * cos(half_yaw) + sin(half_roll) * sin(
+    half_pitch) * sin(half_yaw);
+  quaternion.x() = sin(half_roll) * cos(half_pitch) * cos(half_yaw) - cos(half_roll) * sin(
+    half_pitch) * sin(half_yaw);
+  quaternion.y() = cos(half_roll) * sin(half_pitch) * cos(half_yaw) + sin(half_roll) * cos(
+    half_pitch) * sin(half_yaw);
+  quaternion.z() = cos(half_roll) * cos(half_pitch) * sin(half_yaw) - sin(half_roll) * sin(
+    half_pitch) * cos(half_yaw);
   quaternion.normalize();
 }
 

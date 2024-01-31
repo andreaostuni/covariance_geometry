@@ -71,12 +71,15 @@ void JacobianPosePoseCompositionB(const PoseQuaternion & pose_a, Eigen::Matrix7d
   / @brief Compute pose-point composition function jacobian wrt pose
   */
 void JacobianPosePointComposition(
-  const PoseQuaternion & pose, const Eigen::Vector3d & point, Eigen::Ref<Eigen::Matrix3_7d> jacobian);
+  const PoseQuaternion & pose, const Eigen::Vector3d & point,
+  Eigen::Ref<Eigen::Matrix3_7d> jacobian);
 
 /*
   / @brief Compute pose-point composition function jacobian wrt point
   */
-void JacobianPosePointComposition(const PoseQuaternion & pose, Eigen::Ref<Eigen::Matrix3d> jacobian);
+void JacobianPosePointComposition(
+  const PoseQuaternion & pose,
+  Eigen::Ref<Eigen::Matrix3d> jacobian);
 
 /*
   / @brief Compute pose-point composition function jacobian wrt pose quaternion

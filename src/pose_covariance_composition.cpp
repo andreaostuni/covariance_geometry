@@ -112,7 +112,7 @@ void ComposePoseQuaternionCovariance(
   j_fqc_b.block<4, 4>(3, 3).applyOnTheLeft(jqn_out);
   j_fqc_b.block<3, 4>(0, 3).setZero();
   j_fqc_b.block<4, 3>(3, 0).setZero();
-  
+
   // check this: https://eigen.tuxfamily.org/dox/group__TutorialSparse.html
   cov_out.noalias() = j_fqc_a * cov_a * j_fqc_a.transpose() + j_fqc_b * cov_b * j_fqc_b.transpose();
 }
@@ -181,7 +181,8 @@ void JacobianPosePoseCompositionB(const PoseQuaternion & pose_a, Eigen::Matrix7d
 }
 
 void JacobianPosePointComposition(
-  const PoseQuaternion & pose, const Eigen::Vector3d & point, Eigen::Ref<Eigen::Matrix3_7d> jacobian)
+  const PoseQuaternion & pose, const Eigen::Vector3d & point,
+  Eigen::Ref<Eigen::Matrix3_7d> jacobian)
 {
   // Equation 3.8 pag. 24 A tutorial on SE(3) transformation parameterizations and on-manifold optimization
   jacobian.block<3, 3>(0, 0).setIdentity();

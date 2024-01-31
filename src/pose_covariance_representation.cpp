@@ -130,32 +130,32 @@ Eigen::Matrix7d InverseCovarianceQuaternion(
   double qz = pose.second.z();
   double qw = pose.second.w();
 
-  j_qi_top(0, 0) =  2.0 * (qy * qy + qz * qz) - 1.0;
+  j_qi_top(0, 0) = 2.0 * (qy * qy + qz * qz) - 1.0;
   j_qi_top(0, 1) = -2.0 * (qw * qz + qx * qy);
-  j_qi_top(0, 2) =  2.0 * (qw * qy - qx * qz);
+  j_qi_top(0, 2) = 2.0 * (qw * qy - qx * qz);
 
-  j_qi_top(1, 0) =  2.0 * (qw * qz - qx * qy);
-  j_qi_top(1, 1) =  2.0 * (qx * qx + qz * qz) - 1.0;
+  j_qi_top(1, 0) = 2.0 * (qw * qz - qx * qy);
+  j_qi_top(1, 1) = 2.0 * (qx * qx + qz * qz) - 1.0;
   j_qi_top(1, 2) = -2.0 * (qw * qx + qy * qz);
 
   j_qi_top(2, 0) = -2.0 * (qw * qy + qx * qz);
-  j_qi_top(2, 1) =  2.0 * (qw * qx - qy * qz);
-  j_qi_top(2, 2) =  2.0 * (qx * qx + qy * qy) - 1.0;
+  j_qi_top(2, 1) = 2.0 * (qw * qx - qy * qz);
+  j_qi_top(2, 2) = 2.0 * (qx * qx + qy * qy) - 1.0;
 
-  j_qi_top(0, 3) =  qy * dy + qz * dz;
-  j_qi_top(0, 4) =  qx * dy - 2.0 * qy * dx - qw * dz;
-  j_qi_top(0, 5) =  qx * dz + qw * dy - 2.0 * qz * dx;
+  j_qi_top(0, 3) = qy * dy + qz * dz;
+  j_qi_top(0, 4) = qx * dy - 2.0 * qy * dx - qw * dz;
+  j_qi_top(0, 5) = qx * dz + qw * dy - 2.0 * qz * dx;
   j_qi_top(0, 6) = -qy * dz + qz * dy;
 
-  j_qi_top(1, 3) =  qy * dx - 2.0 * qx * dy + qw * dz;
-  j_qi_top(1, 4) =  qx * dx + qz * dz;
+  j_qi_top(1, 3) = qy * dx - 2.0 * qx * dy + qw * dz;
+  j_qi_top(1, 4) = qx * dx + qz * dz;
   j_qi_top(1, 5) = -qw * dx - 2.0 * qz * dy + qy * dz;
-  j_qi_top(1, 6) =  qx * dz - qz * dx;
+  j_qi_top(1, 6) = qx * dz - qz * dx;
 
-  j_qi_top(2, 3) =  qz * dx - qw * dy - 2.0 * qx * dz;
-  j_qi_top(2, 4) =  qz * dy + qw * dx - 2.0 * qy * dz;
-  j_qi_top(2, 5) =  qx * dx + qy * dy;
-  j_qi_top(2, 6) =  qy * dx - qx * dy;
+  j_qi_top(2, 3) = qz * dx - qw * dy - 2.0 * qx * dz;
+  j_qi_top(2, 4) = qz * dy + qw * dx - 2.0 * qy * dz;
+  j_qi_top(2, 5) = qx * dx + qy * dy;
+  j_qi_top(2, 6) = qy * dx - qx * dy;
 
   jacobianQuaternionNormalization(pose.second, j44);
   j_qi_top.block<3, 4>(0, 3) *= 2 * j44;
@@ -184,7 +184,8 @@ Eigen::Matrix6d InverseCovarianceRPY(const Eigen::Matrix6d & covariance_rpy, con
 
   // Invert covariance and covert it back to RPY
   covariance_quaternion = InverseCovarianceQuaternion(covariance_quaternion, pose_quaternion);
-  covariance3DQuaternionTo3DRPY(pose_quaternion.second.conjugate(), covariance_quaternion, covariance_rpy_out);
+  covariance3DQuaternionTo3DRPY(
+    pose_quaternion.second.conjugate(), covariance_quaternion, covariance_rpy_out);
   return covariance_rpy_out;
 }
 
