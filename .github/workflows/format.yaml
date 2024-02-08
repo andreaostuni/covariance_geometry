@@ -23,4 +23,4 @@ jobs:
       run: sudo apt-get install ament-cmake
     - name: Install ament_lint
       run: sudo apt-get install ament-lint
-    - uses: pre-commit/action@v3.0.0
+    - uses: pre-commit/action@v3.0.1
